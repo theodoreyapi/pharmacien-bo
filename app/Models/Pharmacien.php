@@ -1,0 +1,41 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+
+class Pharmacien extends Authenticatable
+{
+    use HasFactory, Notifiable;
+
+    protected $table = 'pharmacien';
+
+    protected $fillable = [
+        'active',
+        'email',
+        'first_name',
+        'last_name',
+        'password',
+        'phone_number',
+        'role',
+        'about_me',
+        'country',
+        'profile_picture',
+        'username',
+        'amount',
+        'last_amount',
+        'otp_code',
+        'otp_expire_at',
+        'otp_verified',
+        'created_by',
+        'pharmacy_id',
+    ];
+
+    protected $primaryKey = 'id_pharmacien';
+
+    protected $hidden = [
+        'password',
+    ];
+}
