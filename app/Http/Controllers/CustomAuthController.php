@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Auth\ApiUser;
+use App\Models\Pharmacien;
 use App\Models\User;
 use App\Models\UsersPharma;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 
@@ -31,17 +33,42 @@ class CustomAuthController extends Controller
 
         $request->validate($roles, $customMessages);
 
-        $credentials = $request->only('email', 'password');
-        $user = User::where('email', $credentials['email'])->first();
+        $user = Pharmacien::where('email', $request->email)
+            ->orWhere('username', $request->email)
+            ->first();
 
-        if ($user && password_verify($credentials['password'], $user->password)) {
-            Auth::login($user);
-            return redirect()->intended('index');
-        } else {
+        if (!$user || !password_verify($request->password, $user->password)) {
             return back()->withErrors(['E-mail ou mot de passe incorrect.']);
         }
 
-       /* $response = Http::withOptions([
+        if ($user->active !== 'ACTIVE') {
+            return back()->withErrors(['Votre compte est désactivé. Veuillez contacter l\'administrateur.']);
+        }
+
+        // CORRECTION : utiliser le guard 'pharmacien' pour éviter le conflit avec App\Models\User
+        Auth::guard('pharmacien')->login($user);
+
+        // Récupérer et stocker le nom de la pharmacie en session
+        $pharmacy = DB::table('pharmacy')
+            ->where('id_pharmacy', $user->pharmacy_id)
+            ->select('id_pharmacy', 'name', 'address', 'facade_image')
+            ->first();
+
+        session([
+            'pharmacy_id'   => $pharmacy->id_pharmacy ?? null,
+            'pharmacy_name' => $pharmacy->name ?? 'Pharmacie',
+            'pharmacy_address' => $pharmacy->address ?? '',
+            'pharmacy_logo' => $pharmacy->facade_image ?? '',
+        ]);
+
+        return match ($user->role) {
+            'PHARMACIEN'  => redirect()->intended('pharma-index'),
+            'GESTIONNAIRE' => redirect()->intended('requete'),
+            'CAISSIERE'   => redirect()->intended('transactions'),
+            default       => back()->withErrors(['Rôle utilisateur non reconnu.']),
+        };
+
+        /* $response = Http::withOptions([
             'verify' => false
         ])->post(env('API_BASE_URL') . '/auth/login', [
             'email' => $request->email,
@@ -83,15 +110,6 @@ class CustomAuthController extends Controller
         } else {
             return back()->withErrors(['Erreur lors de l\'authentification.']);
         }*/
-    }
-
-    public function dashboard()
-    {
-        if (Auth::check()) {
-            return view('home.index');
-        } else {
-            return view('auth.sign-in');
-        }
     }
 
     public function signOut()

@@ -44,6 +44,10 @@ return [
             'driver' => 'session',
             'provider' => 'apiusers',
         ],
+        'pharmacien' => [
+            'driver'   => 'session',
+            'provider' => 'pharmaciens',
+        ],
     ],
 
     /*
@@ -73,6 +77,11 @@ return [
             'driver' => 'custom', // si tu crées un provider personnalisé
             'model' => App\Auth\ApiUser::class,
         ],
+
+        'pharmaciens' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Pharmacien::class,
+        ],
     ],
 
     /*
@@ -97,6 +106,12 @@ return [
     'passwords' => [
         'users' => [
             'provider' => 'users',
+            'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
+            'expire' => 60,
+            'throttle' => 60,
+        ],
+        'pharmaciens' => [
+            'provider' => 'pharmaciens',
             'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
             'expire' => 60,
             'throttle' => 60,

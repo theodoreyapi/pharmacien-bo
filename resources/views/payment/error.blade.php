@@ -106,16 +106,9 @@
             <p>Veuillez réessayer.</p>
         </div>
 
-        <!-- Retry via app -->
-        <a href="pharmaconsults://payment/error" class="btn">
-            Réessayer dans l’application
-        </a>
-
-        <!-- Retour site
-        <a href="{{ url('/') }}" class="footer-link">
+        <a href="https://www.pharma-consults.com" class="footer-link">
             Retourner sur le site
         </a>
-        -->
 
         <div class="secure">Paiement sécurisé</div>
 

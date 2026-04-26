@@ -1,13 +1,13 @@
-<div class="navbar-header" style="background: #262F64">
+<div class="navbar-header">
     <div class="row align-items-center justify-content-between">
         <div class="col-auto">
             <div class="d-flex flex-wrap align-items-center gap-4">
                 <button type="button" class="sidebar-toggle">
-                    <iconify-icon icon="heroicons:bars-3-solid" class="icon text-2xl non-active" style="color: white"></iconify-icon>
-                    <iconify-icon icon="iconoir:arrow-right" class="icon text-2xl active" style="color: white"></iconify-icon>
+                    <iconify-icon icon="heroicons:bars-3-solid" class="icon text-2xl non-active" style="color: black"></iconify-icon>
+                    <iconify-icon icon="iconoir:arrow-right" class="icon text-2xl active" style="color: black"></iconify-icon>
                 </button>
                 <button type="button" class="sidebar-mobile-toggle">
-                    <iconify-icon icon="heroicons:bars-3-solid" class="icon" style="color: white"></iconify-icon>
+                    <iconify-icon icon="heroicons:bars-3-solid" class="icon" style="color: black"></iconify-icon>
                 </button>
             </div>
         </div>
@@ -115,8 +115,8 @@
                         <div
                             class="py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
                             <div>
-                                <h6 class="text-lg text-primary-light fw-semibold mb-2">{{ Auth::user()->name }} {{ Auth::user()->last_name }}</h6>
-                                <span class="text-secondary-light fw-medium text-sm">{{ Auth::user()->role }}</span>
+                                <h6 class="text-lg text-primary-light fw-semibold mb-2">{{ Auth::guard('pharmacien')->user()->first_name }} {{ Auth::guard('pharmacien')->user()->last_name }}</h6>
+                                <span class="text-secondary-light fw-medium text-sm">{{ Auth::guard('pharmacien')->user()->role }}</span>
                             </div>
                             <button type="button" class="hover-text-danger">
                                 <iconify-icon icon="radix-icons:cross-1" class="icon text-xl"></iconify-icon>

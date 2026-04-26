@@ -50,42 +50,14 @@
             </ul>
         </div>
 
-        @include('layouts.statuts')
+        <div
+            class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center flex-wrap gap-3 justify-content-between">
+            <div class="d-flex align-items-center flex-wrap gap-3">
+            </div>
+            <div class="mt-3 text-secondary-light lh-base" style="font-size: 0.95rem;">
+                {!! $abouts->contenu !!}
+            </div>
+        </div>
 
-        @if ($abouts == null)
-            <div
-                class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center flex-wrap gap-3 justify-content-between">
-                <div class="d-flex align-items-center flex-wrap gap-3">
-                </div>
-                <a href="{{ url('add-about') }}"
-                    class="btn btn-primary text-sm btn-sm px-12 py-12 radius-8 d-flex align-items-center gap-2">
-                    <iconify-icon icon="ic:baseline-plus" class="icon text-xl line-height-1"></iconify-icon>
-                    Ajouter apropos
-                </a>
-            </div>
-            <div class="alert alert-warning" role="alert">
-                <strong>Oups!</strong> Vous n'avez pas encore ajouté apropos de nous. Veuillez ajouter apropos de nous.
-            </div>
-        @else
-            <div class="card basic-data-table radius-12 overflow-hidden">
-                <form action="{{ route('terms-about.update', $abouts->id_politique) }}" method="post">
-                    @csrf
-                    @method('PATCH')
-                    <textarea required class="summernote" name="contenu">
-                {{ $abouts->contenu }}
-                </textarea>
-
-                    <div class="card-footer p-24 bg-base border border-bottom-0 border-end-0 border-start-0">
-                        <div class="d-flex align-items-center justify-content-center gap-3">
-                            <button type="submit"
-                                class="btn btn-primary border border-primary-600 text-md px-28 py-12 radius-8">
-                                {{-- {{ $termes ? 'Mettre à jour' : 'Enregistrer' }} --}}
-                                Mettre à jour
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        @endif
     </div>
 @endsection

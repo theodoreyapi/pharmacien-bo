@@ -45,7 +45,7 @@
                          "X-CSRF-TOKEN": "{{ csrf_token() }}"
                      },
                      body: JSON.stringify({
-                         userName: "{{ Auth::user()->email }}",
+                         userName: "{{ Auth::guard('pharmacien')->user()->email }}",
                          token: token
                      })
                  });

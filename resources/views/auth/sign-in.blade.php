@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pharmaconsults Admin - Authentification</title>
-    <link rel="icon" type="image/png" href="{{ URL::asset('') }}assets/images/favicon.png" sizes="16x16">
+    <title>PharmaConsults Pharmacie - Authentification</title>
+    <link rel="icon" type="image/x-icon" href="{{ URL::asset('') }}assets/images/favicon.ico">
     <!-- remix icon font css  -->
     <link rel="stylesheet" href="{{ URL::asset('') }}assets/css/remixicon.css">
     <!-- BootStrap css -->
@@ -32,12 +32,12 @@
     <link rel="stylesheet" href="{{ URL::asset('') }}assets/css/style.css">
 </head>
 
-<body style="background: #41ba3e1c">
-    <br>
-    <div style="justify-self: center;">
-        <img src="{{ URL::asset('') }}assets/images/logo.png" alt="">
+<body style="background: #41ba3e1c; justify-content: center; align-items: center;">
+    <br><br><br><br><br>
+    <div style="justify-self: center; text-align: center;">
+        <img src="{{ URL::asset('') }}assets/images/PC.png" alt="" height="50%" width="10%">
     </div>
-    <br>
+    <br><br>
     <section class="card" style="justify-self: center;">
 
         <div class="py-32 px-24">

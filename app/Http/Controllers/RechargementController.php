@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
+use App\Models\Rechargements;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class RechargementController extends Controller
 {
@@ -13,85 +16,100 @@ class RechargementController extends Controller
      */
     public function index()
     {
-        if (!Auth::check()) {
-            return redirect()->intended('logout');
-        }
-
-        $responses = Http::withOptions([
-            'verify' => false
-        ])->withHeaders([
-            'Authorization' => 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIwMDIyNTA1ODU4MzE2NDciLCJpc3MiOiJQQVRJRU5UIiwiaWF0IjoxNzQ3MDg0NzgzLCJleHAiOjE3NDcwODgzODN9.S0sMywcFkT8xnvqqCurUPkIEe_Os8m2iSnt8-h60mXk',
-            'Accept' => 'application/json',
-            'Content-Type' => 'application/json',
-        ])->get(env('API_BASE_URL') . '/pharma/' . session('user_data')['wallet']['pharmacyId'] . '/wallet-balance');
-
-        $wallets = $responses->json();
-
-        $response = Http::withOptions([
-            'verify' => false
-        ])->withHeaders([
-            'Authorization' => 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIwMDIyNTA1ODU4MzE2NDciLCJpc3MiOiJQQVRJRU5UIiwiaWF0IjoxNzQ3MDg0NzgzLCJleHAiOjE3NDcwODgzODN9.S0sMywcFkT8xnvqqCurUPkIEe_Os8m2iSnt8-h60mXk',
-            'Accept' => 'application/json',
-            'Content-Type' => 'application/json',
-        ])->get(env('API_BASE_URL_PHARMA') . '/pharma/operations/byPharmacy/' . session('user_data')['wallet']['pharmacyId']);
-
-        if ($response->status() == 200 || $response->status() == 204) {
-            $requetes = collect($response->json())->where('designation', '==', 'RECHARGEMENT')->values();
-
-            return view('pharmacies.rechargement', compact('requetes', 'wallets'));
-        } else {
-            // Gérer l'erreur
-            return abort(500, 'Erreur lors du chargement des données.');
-        }
+        //
     }
 
-    public function init(Request $request)
+    // ▶️ INITIATE PAYMENT
+    public function initiatePayment(Request $request)
     {
-        if (!Auth::check()) {
-            return redirect()->intended('logout');
+        $rules = [
+            'username' => 'required',
+            'deposit_amount' => 'required|numeric|min:100',
+            'payment_method' => 'required|string',
+        ];
+
+        $messages = [
+            'username.required' => "Votre session a expiré. Veuillez vous reconnecter",
+            'deposit_amount.required' => "Impossible d'avoir votre token",
+            'payment_method.required' => "Impossible d'avoir votre token",
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => collect($validator->errors()->all()),
+            ], 422);
+        }
+
+        $user = DB::table('pharmacien')->where('username', $request->username)->first();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'Utilisateur introuvable.',
+            ], 404);
+        }
+
+        // ── Vérifier la limite du wallet (200 000 XOF max) ───────────────
+        // CORRECTION : la logique max() était incorrecte
+        $newAmount = $user->amount + $request->deposit_amount;
+        if ($newAmount > 200000) {
+            return response()->json([
+                'message' => "Le total de votre wallet après rechargement ({$newAmount} XOF) dépasserait la limite de 200 000 XOF. Veuillez saisir un montant inférieur.",
+            ], 422);
         }
 
         try {
-            //Génération du transactionId équivalent à Flutter
-            $now = Carbon::now(); // équivaut à DateTime.now()
-            $random = random_int(0, 9999); // équivaut à Random().nextInt(9999)
-            $transactionId = $now->format('dmYHisv') . $random;
-            //(jour/mois/année/heure/minute/seconde/millisecondes + random)
 
-
-            $response = Http::withOptions([
-                'verify' => false
-            ])->withHeaders([
-                'Authorization' => 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIwMDIyNTA1ODU4MzE2NDciLCJpc3MiOiJQQVRJRU5UIiwiaWF0IjoxNzQ3MDg0NzgzLCJleHAiOjE3NDcwODgzODN9.S0sMywcFkT8xnvqqCurUPkIEe_Os8m2iSnt8-h60mXk',
-                'Accept' => 'application/json',
-                'Content-Type' => 'application/json',
-            ])->post(env('API_BASE_URL_PHARMA') . '/pharma/cinetpay/payment', [
-                'username' => session('user_data')['email'],
-                'amount' => $request->money,
-                'channels' => 'ALL',
-                'description' => 'Rechargement de compte Pharmacie',
-                'transaction_id' => $transactionId,
+            $rechargement = Rechargements::create([
+                'username' => $user->username,
+                'montant' => $request->deposit_amount,
+                'payment_method' => $request->payment_method,
+                'status' => 'pending',
                 'currency' => 'XOF',
+                'checkout_session_id' => null, // cos-xxxx
             ]);
 
-            if ($response->status() == 200 || $response->status() == 201) {
+            $payload = [
+                'amount' => (string) $request->deposit_amount,
+                'currency' => 'XOF',
+                'success_url' => 'https://pharmacie.pharma-consults.com/payment/wave/success/' . $rechargement->id_rechargement,
+                'error_url'   => 'https://pharmacie.pharma-consults.com/payment/wave/error/' . $rechargement->id_rechargement,
+                'client_reference' => (string) $user->username,
+            ];
+
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer wave_ci_prod_rn721NIiORE7q7DvV924gboV_AoatbI6b-3NdfYjLr9RHOXeut3zmM0Cb-I643im7sENfaZBiho1eTkwbf5od5FTKymxOvgnCA',
+                'Content-Type'  => 'application/json',
+            ])->post('https://api.wave.com/v1/checkout/sessions', $payload);
+
+            if (!$response->successful()) {
+                Log::error('Wave error', $response->json());
+
                 return response()->json([
-                    'status' => true,
-                    'message' => 'Rechargement initialisé avec succès',
-                    'url' => $response->body() // ou json_decode($response->body()) si c’est du JSON
-                ]);
+                    'success' => false,
+                    'message' => 'Erreur Wave',
+                    'details' => $response->json(),
+                ], 500);
             }
 
+            $data = $response->json();
+
+            $rechargement->update([
+                'checkout_session_id' => $data['id'],
+            ]);
+
             return response()->json([
-                'status' => false,
-                'message' => 'Erreur lors de l’initialisation du rechargement',
-                'error' => $response->body()
-            ], $response->status());
-        } catch (\Exception $e) {
+                'success' => true,
+                'rechargement_url' => $data['wave_launch_url'],
+                'rechargement_id' => $rechargement->id_rechargement,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Wave Exception', ['error' => $e->getMessage()]);
             return response()->json([
-                'status' => false,
+                'success' => false,
                 'message' => 'Erreur serveur',
-                'error' => $e->getMessage()
             ], 500);
         }
     }

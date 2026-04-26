@@ -1,46 +1,24 @@
 <?php
 
-use App\Http\Controllers\AbonnementController;
 use App\Http\Controllers\AboutController;
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\AssuranceController;
-use App\Http\Controllers\CommuneController;
 use App\Http\Controllers\ConditionController;
 use App\Http\Controllers\CustomAuthController;
-use App\Http\Controllers\GardeController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\MentionController;
-use App\Http\Controllers\MoyenPaieController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaymentWaveController;
-use App\Http\Controllers\PharmacieController;
 use App\Http\Controllers\PharmacienController;
+use App\Http\Controllers\PharmacienViewController;
+use App\Http\Controllers\PharmacyProfileController;
 use App\Http\Controllers\PolicyController;
-use App\Http\Controllers\PriceFicheController;
-use App\Http\Controllers\PublicitesController;
-use App\Http\Controllers\QrCodeController;
 use App\Http\Controllers\RechargementController;
-use App\Http\Controllers\ReponsesController;
-use App\Http\Controllers\RequetesController;
-use App\Http\Controllers\ReservationsController;
-use App\Http\Controllers\TransactionController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\UserPharmacienController;
+use App\Http\Controllers\ReviewController;
 use App\Models\Commune;
 use App\Models\Pharmacy;
-use App\Models\PharmacyRequest;
-use App\Models\Rechargements;
-use App\Models\RequestMedicament;
-use App\Models\ReservationMedicament;
-use App\Models\Subscriptions;
-use App\Models\Transfert;
-use App\Models\UsersPharma;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
-Route::get('index', [CustomAuthController::class, 'dashboard'])->middleware('auth');;
 Route::post('custom-login', [CustomAuthController::class, 'customLogin']);
 Route::get('logout', [CustomAuthController::class, 'signOut'])->name('logout');
 
@@ -50,8 +28,8 @@ Route::get('/payment/wave/error/{id}', [PaymentWaveController::class, 'error'])
     ->name('wave.error');
 
 Route::get('/', function () {
-    if (Auth::check()) {
-        return redirect()->intended('index');
+    if (Auth::guard('pharmacien')->check()) {
+        return redirect()->intended('pharma-index');
     }
     return view('auth.sign-in');
 });
@@ -72,203 +50,150 @@ Route::get('forgot', function () {
 });
 
 // tableau de bord
-Route::get('index', function () {
+Route::get('pharma-index', function () {
 
-    if (!Auth::check()) {
-        return redirect()->intended('logout');
+    if (!Auth::guard('pharmacien')->check()) {
+        return redirect()->route('logout');
     }
 
+    $pharmacien = Auth::guard('pharmacien')->user();
+    $pharmacyId = $pharmacien->pharmacy_id;
+    $username   = $pharmacien->username;
     $currentYear = date('Y');
 
-    // ── Statistiques générales ─────────────────────────────────────────
-    $statistiques = [
+    // ── Requêtes ──────────────────────────────────────────────────────
+    $totalReceived = DB::table('pharmacy_request')
+        ->where('pharmacy_id', $pharmacyId)->count();
 
-        // Nombre total d'utilisateurs
-        'totalUsers' => UsersPharma::count(),
+    $totalSent = DB::table('pharmacy_request')
+        ->where('pharmacy_id', $pharmacyId)
+        ->whereNotNull('status')->where('status', '!=', 'EN_ATTENTE')->count();
 
-        // Souscriptions totales (toutes confondues)
-        'totalSubscriptions' => Subscriptions::count(),
+    $totalAcceptees = DB::table('pharmacy_request')
+        ->where('pharmacy_id', $pharmacyId)->where('status', 'ACCEPTEE')->count();
 
-        // Opérations totales (transferts)
-        'totalOperations' => Transfert::count(),
+    $totalRefusees = DB::table('pharmacy_request')
+        ->where('pharmacy_id', $pharmacyId)->where('status', 'REFUSEE')->count();
 
-        // Réservations totales
-        'totalReservations' => ReservationMedicament::count(),
+    $totalEnAttente = DB::table('pharmacy_request')
+        ->where('pharmacy_id', $pharmacyId)
+        ->where(function($q) { $q->where('status', 'EN_ATTENTE')->orWhereNull('status'); })->count();
 
-        // Requêtes totales (pharmacy_request)
-        'totalRequests' => PharmacyRequest::count(),
+    // ── Réservations ──────────────────────────────────────────────────
+    $totalReservations = DB::table('reservation_medicament')
+        ->where('pharmacy_id', $pharmacyId)->count();
 
-        // Requêtes utilisateurs (request_medicament)
-        'totalRequestsUsers' => RequestMedicament::count(),
+    $totalReserve = DB::table('reservation_medicament')
+        ->where('pharmacy_id', $pharmacyId)->where('status', 'RESERVE')->count();
 
-        // Rechargements totaux (réussis)
-        'totalRechargements' => Rechargements::where('status', 'success')
-            ->count(),
+    $totalServi = DB::table('reservation_medicament')
+        ->where('pharmacy_id', $pharmacyId)->where('status', 'SERVI')->count();
 
-        // Transferts totaux (uniquement DEBIT pour éviter le double comptage)
-        'totalTransferts' => Transfert::where('type_operation', 'DEBIT')
-            ->count(),
+    $totalExpire = DB::table('reservation_medicament')
+        ->where('pharmacy_id', $pharmacyId)
+        ->where('status', 'RESERVE')
+        ->where('date_expiration', '<', now())->count();
 
-        // Nombre d'utilisateurs avec au moins une souscription active
-        'totalActifSubscriptions' => Subscriptions::where('status', 'active')
-            ->where('valid_until', '>', Carbon::now())
-            ->distinct('username')
-            ->count('username'),
+    // ── Wallet ────────────────────────────────────────────────────────
+    $solde = number_format($pharmacien->amount ?? 0, 0, ',', ' ') . ' FCFA';
 
-        // Revenu total = somme des montants des rechargements réussis
-        'totalSubscriptionAmount' => Rechargements::where('status', 'success')
-            ->sum('montant'),
-    ];
+    $totalCredit = DB::table('transfert')
+        ->where('receiver_username', $username)->where('type_operation', 'CREDIT')->sum('amount');
 
-    // ── Statistiques des souscriptions par mois (année en cours) ──────
-    // Regroupe les rechargements réussis par mois pour le graphique
-    $souscriptionsParMois = Rechargements::selectRaw("DATE_FORMAT(created_at, '%m') as mois_num, DATE_FORMAT(created_at, '%b') as mois, SUM(montant) as cumulTotal")
-        ->where('status', 'success')
-        ->whereYear('created_at', $currentYear)
-        ->groupByRaw("DATE_FORMAT(created_at, '%m'), DATE_FORMAT(created_at, '%b')")
-        ->orderByRaw("DATE_FORMAT(created_at, '%m')")
-        ->get()
-        ->toArray();
+    $totalDebit = DB::table('transfert')
+        ->where('sender_username', $username)->where('type_operation', 'DEBIT')->sum('amount');
 
-    // Remplir les mois manquants avec 0 pour avoir les 12 mois
+    $totalRechargements = DB::table('rechargements')
+        ->where('username', $username)->where('status', 'success')->sum('montant');
+
+    // ── Avis ──────────────────────────────────────────────────────────
+    $allReviews   = DB::table('review')->where('pharmacy_id', $pharmacyId)->get();
+    $totalAvis    = $allReviews->count();
+    $noteMoyenne  = $totalAvis > 0 ? round($allReviews->avg('evaluation'), 1) : 0;
+
+    // ── Statistiques par mois ─────────────────────────────────────────
     $moisFr = [
-        '01' => 'Jan',
-        '02' => 'Fév',
-        '03' => 'Mar',
-        '04' => 'Avr',
-        '05' => 'Mai',
-        '06' => 'Juin',
-        '07' => 'Juil',
-        '08' => 'Août',
-        '09' => 'Sep',
-        '10' => 'Oct',
-        '11' => 'Nov',
-        '12' => 'Déc',
+        '01' => 'Jan', '02' => 'Fév', '03' => 'Mar', '04' => 'Avr',
+        '05' => 'Mai', '06' => 'Juin', '07' => 'Juil', '08' => 'Août',
+        '09' => 'Sep', '10' => 'Oct', '11' => 'Nov', '12' => 'Déc',
     ];
 
-    $souscriptionsIndexed = collect($souscriptionsParMois)->keyBy('mois_num')->toArray();
+    $requestsParMois = DB::table('pharmacy_request')
+        ->selectRaw("DATE_FORMAT(created_at, '%m') as mois_num, COUNT(*) as total")
+        ->where('pharmacy_id', $pharmacyId)->whereYear('created_at', $currentYear)
+        ->groupByRaw("DATE_FORMAT(created_at, '%m')")->pluck('total', 'mois_num')->toArray();
+
+    $responsesParMois = DB::table('pharmacy_request')
+        ->selectRaw("DATE_FORMAT(updated_at, '%m') as mois_num, COUNT(*) as total")
+        ->where('pharmacy_id', $pharmacyId)->whereYear('updated_at', $currentYear)
+        ->whereNotNull('status')->where('status', '!=', 'EN_ATTENTE')
+        ->groupByRaw("DATE_FORMAT(updated_at, '%m')")->pluck('total', 'mois_num')->toArray();
+
+    $reservationsParMois = DB::table('reservation_medicament')
+        ->selectRaw("DATE_FORMAT(date_reservation, '%m') as mois_num, COUNT(*) as total")
+        ->where('pharmacy_id', $pharmacyId)->whereYear('date_reservation', $currentYear)
+        ->groupByRaw("DATE_FORMAT(date_reservation, '%m')")->pluck('total', 'mois_num')->toArray();
 
     $souscriptions = [];
     foreach ($moisFr as $num => $label) {
         $souscriptions[] = [
-            'mois'       => $label,
-            'cumulTotal' => isset($souscriptionsIndexed[$num])
-                ? (float) $souscriptionsIndexed[$num]->cumulTotal
-                : 0,
+            'mois'             => $label,
+            'requestCount'     => (int) ($requestsParMois[$num]     ?? 0),
+            'responseCount'    => (int) ($responsesParMois[$num]    ?? 0),
+            'reservationCount' => (int) ($reservationsParMois[$num] ?? 0),
         ];
     }
 
-    return view('home.index', compact('statistiques', 'souscriptions'));
-});
-Route::get('pharma-index', function () {
-
-    if (!Auth::check()) {
-        return redirect()->intended('logout');
-    }
-
-    $responsestates = Http::withOptions([
-        'verify' => false
-    ])->withHeaders([
-        'Authorization' => 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIwMDIyNTA1ODU4MzE2NDciLCJpc3MiOiJQQVRJRU5UIiwiaWF0IjoxNzQ3MDg0NzgzLCJleHAiOjE3NDcwODgzODN9.S0sMywcFkT8xnvqqCurUPkIEe_Os8m2iSnt8-h60mXk',
-        'Accept' => 'application/json',
-        'Content-Type' => 'application/json',
-    ])->get(env('API_BASE_URL_PHARMA') . '/pharma/statistiques/pharmacy/' . session('user_data')['wallet']['pharmacyId'] . '/cumulative-money');
-
-    $statistiques = $responsestates->json();
-
-    $response = Http::withOptions([
-        'verify' => false
-    ])->withHeaders([
-        'Authorization' => 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIwMDIyNTA1ODU4MzE2NDciLCJpc3MiOiJQQVRJRU5UIiwiaWF0IjoxNzQ3MDg0NzgzLCJleHAiOjE3NDcwODgzODN9.S0sMywcFkT8xnvqqCurUPkIEe_Os8m2iSnt8-h60mXk',
-        'Accept' => 'application/json',
-        'Content-Type' => 'application/json',
-    ])->get(env('API_BASE_URL_PHARMA') . '/pharma/statistiques/monthly-stats/pharmacy?pharmacyId=' . session('user_data')['wallet']['pharmacyId']);
-
-    $souscriptions = $response->json();
-
-    $montant = Http::withOptions([
-        'verify' => false
-    ])->withHeaders([
-        'Authorization' => 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIwMDIyNTA1ODU4MzE2NDciLCJpc3MiOiJQQVRJRU5UIiwiaWF0IjoxNzQ3MDg0NzgzLCJleHAiOjE3NDcwODgzODN9.S0sMywcFkT8xnvqqCurUPkIEe_Os8m2iSnt8-h60mXk',
-        'Accept' => 'application/json',
-        'Content-Type' => 'application/json',
-    ])->get(env('API_BASE_URL') . '/pharma' . '/' . session('user_data')['wallet']['pharmacyId'] . '/wallet-balance');
-
-    $solde = $montant->json();
+    $statistiques = [
+        'totalReceived'     => $totalReceived,
+        'totalSent'         => $totalSent,
+        'totalAcceptees'    => $totalAcceptees,
+        'totalRefusees'     => $totalRefusees,
+        'totalEnAttente'    => $totalEnAttente,
+        'totalReservations' => $totalReservations,
+        'totalReserve'      => $totalReserve,
+        'totalServi'        => $totalServi,
+        'totalExpire'       => $totalExpire,
+        'totalCredit'       => number_format($totalCredit, 0, ',', ' '),
+        'totalDebit'        => number_format($totalDebit, 0, ',', ' '),
+        'totalRechargements'=> number_format($totalRechargements, 0, ',', ' '),
+        'totalAvis'         => $totalAvis,
+        'noteMoyenne'       => $noteMoyenne,
+    ];
 
     return view('home.pharma-index', compact('statistiques', 'souscriptions', 'solde'));
 });
 
 // utilisateurs
-Route::resource('users', UserController::class);
-Route::get('view-users', [UserController::class, 'showUserGet'])->name('users.showUserGet');
 Route::get('user-add', function () {
     return view('users.add-user');
 });
-Route::get('conditions', function () {
-    return view('conditions.condition');
-});
 
-// Publicites
-Route::resource('publicites', PublicitesController::class);
+// reviews
+Route::resource('reviews', ReviewController::class);
+
+// Ma pharmacie
+Route::get('ma-pharmacie', [PharmacyProfileController::class, 'index'])->name('pharmacie.profil');
+Route::post('ma-pharmacie/update', [PharmacyProfileController::class, 'update'])->name('pharmacie.update');
 
 //{{ url()->previous() }}
 // pharmacie
-Route::resource('assurance', AssuranceController::class);
-Route::resource('paiement', MoyenPaieController::class);
-Route::resource('pharmacy', PharmacieController::class);
-Route::get('/search-medicaments', [PriceFicheController::class, 'search'])->name('medicaments.search');
-Route::resource('garde', GardeController::class);
-Route::get('add-garde', [GardeController::class, 'getCommune']);
-Route::post('add-garde', [GardeController::class, 'storeGarde']);
-Route::resource('commune', CommuneController::class);
-Route::resource('medicament', PriceFicheController::class);
-Route::resource('requete', RequetesController::class);
-Route::resource('reservation', ReservationsController::class);
-Route::resource('transactions', TransactionController::class);
-Route::resource('rechargement', RechargementController::class);
-Route::resource('qrcode', QrCodeController::class);
-Route::resource('reponse', ReponsesController::class);
+Route::get('rechargements', [PharmacienViewController::class, 'rechargements']);
+Route::post('rechargements/initier', [RechargementController::class, 'initiatePayment']);
 
-Route::post('asso-assurance/{id}', [PharmacieController::class, 'assoAssurance']);
-Route::post('asso-paiement/{id}', [PharmacieController::class, 'assoPaiement']);
-Route::post('rechargement/init', [RechargementController::class, 'init'])->name('rechargement.init');
+// Requêtes
+Route::get('requete', [PharmacienViewController::class, 'requetes']);
+Route::post('requete/{id}/accepter', [PharmacienViewController::class, 'accepterRequete']);
+Route::post('requete/{id}/refuser',  [PharmacienViewController::class, 'refuserRequete']);
+
+// Réservations
+Route::get('reservations', [PharmacienViewController::class, 'reservations']);
+Route::post('reservations/{id}/servir', [PharmacienViewController::class, 'servirReservation']);
+
+// Transactions
+Route::get('transactions', [PharmacienViewController::class, 'transactions']);
 
 Route::post('/save-fcm-token', [NotificationController::class, 'storeToken']);
-
-Route::get('add-pharmacy', function () {
-
-    $communes = Commune::orderBy('name', 'ASC')->get();
-
-    return view('pharmacies.add-pharmacy', compact('communes'));
-});
-Route::get('view-pharmacy/{id}', [PharmacieController::class, 'showAllGet'])->name('pharmacy.showAllGet');
-Route::get('view-medicament', [PriceFicheController::class, 'showAllGet'])->name('medicament.showAllGet');
-
-Route::get('add-medicament', function () {
-    return view('pharmacies.add-medicament');
-});
-
-Route::get('/pharmacy/search', [PriceFicheController::class, 'search'])->name('search.pharmacy');
-
-// rapports
-Route::get('transaction', function () {
-    return view('layouts.master');
-});
-Route::get('abonnement', function () {
-    return view('layouts.master');
-});
-Route::get('utilisateur', function () {
-    return view('layouts.master');
-});
-Route::get('pharmacies', function () {
-    return view('layouts.master');
-});
-
-// abonnement
-Route::resource('pricing', AbonnementController::class);
-Route::post('add-forfait/{id}', [AbonnementController::class, 'addForfait']);
-Route::post('update-module/{id}', [AbonnementController::class, 'updateModule']);
 
 // termes
 Route::resource('terms-about', AboutController::class);
@@ -276,36 +201,11 @@ Route::resource('terms-politicy', PolicyController::class);
 Route::resource('terms-mention', MentionController::class);
 Route::resource('terms-aide', HelpController::class);
 Route::resource('terms-condition', ConditionController::class);
-Route::get('add-about', function () {
-    return view('termes.about.add-about');
-});
-Route::get('add-politicy', function () {
-    return view('termes.policy.add-politicy');
-});
-Route::get('add-mention', function () {
-    return view('termes.mention.add-mention');
-});
-Route::get('add-aide', function () {
-    return view('termes.help.add-aide');
-});
-Route::get('add-condition', function () {
-    return view('termes.terms.add-termes');
-});
 
 // setting
-Route::resource('company', AdminController::class);
-Route::resource('user-pharma', UserPharmacienController::class);
-Route::resource('pharmacien', PharmacienController::class);
+Route::resource('equipes', PharmacienController::class);
 Route::post('profile', [PharmacienController::class, 'profile']);
-Route::get('notification', function () {
-    return view('layouts.master');
-});
-Route::get('notification-alert', function () {
-    return view('layouts.master');
-});
-Route::get('payment-gateway', function () {
-    return view('layouts.master');
-});
+
 Route::get('view-profile', function () {
     return view('users.profile');
 });

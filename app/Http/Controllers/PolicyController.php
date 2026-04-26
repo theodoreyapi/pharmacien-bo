@@ -15,7 +15,7 @@ class PolicyController extends Controller
     public function index()
     {
 
-        if (!Auth::check()) {
+        if (!Auth::guard('pharmacien')->check()) {
             return redirect()->intended('logout');
         }
 
@@ -37,41 +37,7 @@ class PolicyController extends Controller
      */
     public function store(Request $request)
     {
-        if (!Auth::check()) {
-            return redirect()->intended('logout');
-        }
-
-        $roles = [
-            'contenu' => 'required',
-        ];
-        $customMessages = [
-            'contenu.required' => "Veuillez saisir au moins un mot.",
-        ];
-
-        $request->validate($roles, $customMessages);
-
-        $response = Http::withOptions([
-            'verify' => false
-        ])->withHeaders([
-            'Authorization' => 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIwMDIyNTA1ODU4MzE2NDciLCJpc3MiOiJQQVRJRU5UIiwiaWF0IjoxNzQ3MDg0NzgzLCJleHAiOjE3NDcwODgzODN9.S0sMywcFkT8xnvqqCurUPkIEe_Os8m2iSnt8-h60mXk',
-            'Accept' => 'application/json',
-            'Content-Type' => 'application/json',
-        ])->post(env('API_BASE_URL_PHARMA') . '/pharma/parametres-generaux/create', [
-            'libelle' => 'POLITIQUE CONFIDENTIALITES',
-            'contenu' => $request->contenu,
-            'type' => 'POLITIQUE CONFIDENTIALITES',
-        ]);
-
-        dd(
-            $response->status() . ' </br>' .
-                $response->body() . ' </br>' .
-                json_encode($response->json(), JSON_PRETTY_PRINT)
-        );
-        if ($response->status() == 201 || $response->status() == 200) {
-            return back()->with('succes',  "Ajout avec succès.");
-        } else {
-            return back()->withErrors(["Impossible d'ajouter. Veuillez réessayer!!"]);
-        }
+        //
     }
 
     /**
@@ -95,42 +61,7 @@ class PolicyController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        if (!Auth::check()) {
-            return redirect()->intended('logout');
-        }
-
-        $roles = [
-            'contenu' => 'required',
-        ];
-        $customMessages = [
-            'contenu.required' => "Veuillez saisir au moins un mot.",
-        ];
-
-        $request->validate($roles, $customMessages);
-
-        $response = Http::withOptions([
-            'verify' => false
-        ])->withHeaders([
-            'Authorization' => 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIwMDIyNTA1ODU4MzE2NDciLCJpc3MiOiJQQVRJRU5UIiwiaWF0IjoxNzQ3MDg0NzgzLCJleHAiOjE3NDcwODgzODN9.S0sMywcFkT8xnvqqCurUPkIEe_Os8m2iSnt8-h60mXk',
-            'Accept' => 'application/json',
-            'Content-Type' => 'application/json',
-        ])->put(env('API_BASE_URL_PHARMA') . '/pharma/parametres-generaux/update/' . $id, [
-            'libelle' => 'POLITIQUE CONFIDENTIALITES',
-            'contenu' => $request->contenu,
-            'type' => 'POLITIQUE CONFIDENTIALITES',
-        ]);
-
-        /* dd(
-            $response->status() . ' </br>' .
-                $response->body() . ' </br>' .
-                json_encode($response->json(), JSON_PRETTY_PRINT)
-        ); */
-
-        if ($response->status() == 201 || $response->status() == 200) {
-            return back()->with('succes',  "Mise a jour avec succès.");
-        } else {
-            return back()->withErrors(["Impossible de mettre a jour. Veuillez réessayer!!"]);
-        }
+        //
     }
 
     /**

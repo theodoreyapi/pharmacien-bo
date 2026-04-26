@@ -112,16 +112,10 @@
             <p><strong>Moyen :</strong> Wave</p>
         </div>
 
-        <!-- Retour app mobile -->
-        <a href="pharmaconsults://payment/success" class="btn">
-            Retourner dans l’application
-        </a>
-
-        <!-- Retour site
-        <a href="{{ url('/') }}" class="footer-link">
+        <!-- Retour site -->
+        <a href="https://www.pharma-consults.com" class="footer-link">
             Retourner sur le site
         </a>
-        -->
 
         <div class="secure">Paiement sécurisé</div>
 

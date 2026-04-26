@@ -8,7 +8,7 @@ use Illuminate\Notifications\Notifiable;
 
 class Pharmacien extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use Notifiable;
 
     protected $table = 'pharmacien';
 
@@ -38,4 +38,19 @@ class Pharmacien extends Authenticatable
     protected $hidden = [
         'password',
     ];
+
+    public function getAuthIdentifierName(): string
+    {
+        return 'id_pharmacien';
+    }
+
+    public function getAuthIdentifier()
+    {
+        return $this->id_pharmacien;
+    }
+
+    public function getAuthPassword(): string
+    {
+        return $this->password;
+    }
 }
