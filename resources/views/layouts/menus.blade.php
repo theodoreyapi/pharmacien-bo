@@ -61,26 +61,33 @@
                 </a>
                 <ul
                     class="sidebar-submenu {{ Route::is('requete', 'reponse', 'reservations', 'paiement', 'rechargements', 'transactions') ? 'show' : '' }}">
-                    @if (Auth::guard('pharmacien')->user()->role == 'PHARMACIEN' ||
-                            Auth::guard('pharmacien')->user()->role == 'GESTIONNAIRE')
+                    {{-- @if (Auth::guard('pharmacien')->user()->role == 'PHARMACIEN' || Auth::guard('pharmacien')->user()->role == 'GESTIONNAIRE')
                         <li class="{{ Route::is('requete') ? 'active-page' : '' }}">
                             <a href="{{ url('requete') }}" class="{{ Route::is('requete') ? 'active-page' : '' }}"><i
                                     class="ri-circle-fill circle-icon text-danger-main w-auto"></i>
                                 Requêtes</a>
-                        </li>
-                        {{-- <li class="{{ Route::is('reponse') ? 'active-page' : '' }}">
+                        </li> --}}
+                    {{-- <li class="{{ Route::is('reponse') ? 'active-page' : '' }}">
                             <a href="{{ url('reponse') }}" class="{{ Route::is('reponse') ? 'active-page' : '' }}"><i
                                     class="ri-circle-fill circle-icon text-danger-main w-auto"></i>
                                 Reponses</a>
                         </li> --}}
-                    @endif
-                    @if (Auth::guard('pharmacien')->user()->role == 'PHARMACIEN' ||
-                            Auth::guard('pharmacien')->user()->role == 'GESTIONNAIRE')
+                    {{-- @endif --}}
+                    {{-- @if (Auth::guard('pharmacien')->user()->role == 'PHARMACIEN' || Auth::guard('pharmacien')->user()->role == 'GESTIONNAIRE')
                         <li class="{{ Route::is('reservations') ? 'active-page' : '' }}">
                             <a href="{{ url('reservations') }}"
                                 class="{{ Route::is('reservations') ? 'active-page' : '' }}"><i
                                     class="ri-circle-fill circle-icon text-danger-main w-auto"></i>
                                 Réservations</a>
+                        </li>
+                    @endif --}}
+                    @if (Auth::guard('pharmacien')->user()->role == 'PHARMACIEN' ||
+                            Auth::guard('pharmacien')->user()->role == 'GESTIONNAIRE')
+                        <li class="{{ Route::is('appointments') ? 'active-page' : '' }}">
+                            <a href="{{ url('appointments') }}"
+                                class="{{ Route::is('appointments') ? 'active-page' : '' }}"><i
+                                    class="ri-circle-fill circle-icon text-danger-main w-auto"></i>
+                                Rendez-vous</a>
                         </li>
                     @endif
                     @if (Auth::guard('pharmacien')->user()->role == 'PHARMACIEN')
@@ -93,8 +100,7 @@
                     @endif
                     @if (Auth::guard('pharmacien')->user()->role == 'PHARMACIEN')
                         <li class="{{ Route::is('reviews') ? 'active-page' : '' }}">
-                            <a href="{{ url('reviews') }}"
-                                class="{{ Route::is('reviews') ? 'active-page' : '' }}"><i
+                            <a href="{{ url('reviews') }}" class="{{ Route::is('reviews') ? 'active-page' : '' }}"><i
                                     class="ri-circle-fill circle-icon text-success-main w-auto"></i>
                                 Notes & Commentaires</a>
                         </li>
@@ -118,18 +124,14 @@
                 </ul>
             </li>
 
-            <li
-                class="{{ Route::is('terms-about') ? 'active-page' : '' }}">
-                <a href="{{ url('terms-about') }}"
-                    class="{{ Route::is('terms-about') ? 'active-page' : '' }}">
+            <li class="{{ Route::is('terms-about') ? 'active-page' : '' }}">
+                <a href="{{ url('terms-about') }}" class="{{ Route::is('terms-about') ? 'active-page' : '' }}">
                     <iconify-icon icon="octicon:info-24" class="menu-icon"></iconify-icon>
                     <span>Apropos de nous</span>
                 </a>
             </li>
-            <li
-                class="{{ Route::is('terms-politicy') ? 'active-page' : '' }}">
-                <a href="{{ url('terms-politicy') }}"
-                    class="{{ Route::is('terms-politicy') ? 'active-page' : '' }}">
+            <li class="{{ Route::is('terms-politicy') ? 'active-page' : '' }}">
+                <a href="{{ url('terms-politicy') }}" class="{{ Route::is('terms-politicy') ? 'active-page' : '' }}">
                     <iconify-icon icon="octicon:info-24" class="menu-icon"></iconify-icon>
                     <span>Politique de confidentialite</span>
                 </a>
@@ -138,22 +140,18 @@
                 class="{{ Route::is('terms-mention') ? 'active-page' : '' }}
             {{ Route::is('add-mention') ? 'active-page' : '' }}
             {{ Route::is('edit-mention') ? 'active-page' : '' }}">
-                <a href="{{ url('terms-mention') }}"
-                    class="{{ Route::is('terms-mention') ? 'active-page' : '' }}">
+                <a href="{{ url('terms-mention') }}" class="{{ Route::is('terms-mention') ? 'active-page' : '' }}">
                     <iconify-icon icon="octicon:info-24" class="menu-icon"></iconify-icon>
                     <span>Mention legales</span>
                 </a>
             </li>
-            <li
-                class="{{ Route::is('terms-aide') ? 'active-page' : '' }}">
-                <a href="{{ url('terms-aide') }}"
-                    class="{{ Route::is('terms-aide') ? 'active-page' : '' }}">
+            <li class="{{ Route::is('terms-aide') ? 'active-page' : '' }}">
+                <a href="{{ url('terms-aide') }}" class="{{ Route::is('terms-aide') ? 'active-page' : '' }}">
                     <iconify-icon icon="octicon:info-24" class="menu-icon"></iconify-icon>
                     <span>Aide</span>
                 </a>
             </li>
-            <li
-                class="{{ Route::is('terms-condition') ? 'active-page' : '' }}">
+            <li class="{{ Route::is('terms-condition') ? 'active-page' : '' }}">
                 <a href="{{ url('terms-condition') }}"
                     class="{{ Route::is('terms-condition') ? 'active-page' : '' }}=">
                     <iconify-icon icon="octicon:info-24" class="menu-icon"></iconify-icon>

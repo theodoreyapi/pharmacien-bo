@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AboutController;
+use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\ConditionController;
 use App\Http\Controllers\CustomAuthController;
 use App\Http\Controllers\HelpController;
@@ -77,7 +78,9 @@ Route::get('pharma-index', function () {
 
     $totalEnAttente = DB::table('pharmacy_request')
         ->where('pharmacy_id', $pharmacyId)
-        ->where(function($q) { $q->where('status', 'EN_ATTENTE')->orWhereNull('status'); })->count();
+        ->where(function ($q) {
+            $q->where('status', 'EN_ATTENTE')->orWhereNull('status');
+        })->count();
 
     // ── Réservations ──────────────────────────────────────────────────
     $totalReservations = DB::table('reservation_medicament')
@@ -113,9 +116,18 @@ Route::get('pharma-index', function () {
 
     // ── Statistiques par mois ─────────────────────────────────────────
     $moisFr = [
-        '01' => 'Jan', '02' => 'Fév', '03' => 'Mar', '04' => 'Avr',
-        '05' => 'Mai', '06' => 'Juin', '07' => 'Juil', '08' => 'Août',
-        '09' => 'Sep', '10' => 'Oct', '11' => 'Nov', '12' => 'Déc',
+        '01' => 'Jan',
+        '02' => 'Fév',
+        '03' => 'Mar',
+        '04' => 'Avr',
+        '05' => 'Mai',
+        '06' => 'Juin',
+        '07' => 'Juil',
+        '08' => 'Août',
+        '09' => 'Sep',
+        '10' => 'Oct',
+        '11' => 'Nov',
+        '12' => 'Déc',
     ];
 
     $requestsParMois = DB::table('pharmacy_request')
@@ -144,6 +156,31 @@ Route::get('pharma-index', function () {
         ];
     }
 
+    // ── Rendez-vous Vaccination ─────────────────────────────────────
+    $totalAppointments = DB::table('appointments')
+        ->where('pharmacy_id', $pharmacyId)
+        ->count();
+
+    $totalPendingAppointments = DB::table('appointments')
+        ->where('pharmacy_id', $pharmacyId)
+        ->where('status', 'pending')
+        ->count();
+
+    $totalConfirmedAppointments = DB::table('appointments')
+        ->where('pharmacy_id', $pharmacyId)
+        ->where('status', 'confirmed')
+        ->count();
+
+    $totalCompletedAppointments = DB::table('appointments')
+        ->where('pharmacy_id', $pharmacyId)
+        ->where('status', 'completed')
+        ->count();
+
+    $totalCancelledAppointments = DB::table('appointments')
+        ->where('pharmacy_id', $pharmacyId)
+        ->where('status', 'cancelled')
+        ->count();
+
     $statistiques = [
         'totalReceived'     => $totalReceived,
         'totalSent'         => $totalSent,
@@ -156,9 +193,16 @@ Route::get('pharma-index', function () {
         'totalExpire'       => $totalExpire,
         'totalCredit'       => number_format($totalCredit, 0, ',', ' '),
         'totalDebit'        => number_format($totalDebit, 0, ',', ' '),
-        'totalRechargements'=> number_format($totalRechargements, 0, ',', ' '),
+        'totalRechargements' => number_format($totalRechargements, 0, ',', ' '),
         'totalAvis'         => $totalAvis,
         'noteMoyenne'       => $noteMoyenne,
+
+        // Rendez-vous
+        'totalAppointments'          => $totalAppointments,
+        'totalPendingAppointments'   => $totalPendingAppointments,
+        'totalConfirmedAppointments' => $totalConfirmedAppointments,
+        'totalCompletedAppointments' => $totalCompletedAppointments,
+        'totalCancelledAppointments' => $totalCancelledAppointments,
     ];
 
     return view('home.pharma-index', compact('statistiques', 'souscriptions', 'solde'));
@@ -215,3 +259,23 @@ Route::get('add-admin', function () {
 
     return view('users.add-admin', compact('communes'));
 });
+
+Route::get(
+    '/appointments',
+    [AppointmentController::class, 'index']
+)->name('appointments.index');
+
+Route::patch(
+    '/appointments/{id}/confirm',
+    [AppointmentController::class, 'confirm']
+)->name('appointments.confirm');
+
+Route::patch(
+    '/appointments/{id}/cancel',
+    [AppointmentController::class, 'cancel']
+)->name('appointments.cancel');
+
+Route::patch(
+    '/appointments/{id}/complete',
+    [AppointmentController::class, 'complete']
+)->name('appointments.complete');

@@ -20,9 +20,121 @@
         </div>
 
         {{-- ══════════════════════════════════════
+     SECTION — RENDEZ-VOUS
+══════════════════════════════════════ --}}
+        <p class="fw-semibold text-secondary-light text-sm mb-12">💉 Rendez-vous vaccination</p>
+
+        <div class="row row-cols-xxxl-5 row-cols-lg-3 row-cols-sm-2 row-cols-1 gy-4 mb-24">
+
+            {{-- Total --}}
+            <div class="col">
+                <div class="card shadow-none border bg-gradient-start-1 h-100">
+                    <div class="card-body p-20">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                            <div>
+                                <p class="fw-medium text-primary-light mb-1">Total RDV</p>
+                                <h6 class="mb-0">{{ $statistiques['totalAppointments'] }}</h6>
+                            </div>
+
+                            <div
+                                class="w-50-px h-50-px bg-info rounded-circle d-flex justify-content-center align-items-center">
+                                <iconify-icon icon="ph:calendar-plus-bold" class="text-white text-2xl mb-0"></iconify-icon>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- En attente --}}
+            <div class="col">
+                <div class="card shadow-none border bg-gradient-start-2 h-100">
+                    <div class="card-body p-20">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                            <div>
+                                <p class="fw-medium text-primary-light mb-1">En attente</p>
+                                <h6 class="mb-0 text-warning-main">
+                                    {{ $statistiques['totalPendingAppointments'] }}
+                                </h6>
+                            </div>
+
+                            <div
+                                class="w-50-px h-50-px bg-warning-main rounded-circle d-flex justify-content-center align-items-center">
+                                <iconify-icon icon="ph:clock-bold" class="text-white text-2xl mb-0"></iconify-icon>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Confirmés --}}
+            <div class="col">
+                <div class="card shadow-none border bg-gradient-start-3 h-100">
+                    <div class="card-body p-20">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                            <div>
+                                <p class="fw-medium text-primary-light mb-1">Confirmés</p>
+                                <h6 class="mb-0 text-success-main">
+                                    {{ $statistiques['totalConfirmedAppointments'] }}
+                                </h6>
+                            </div>
+
+                            <div
+                                class="w-50-px h-50-px bg-success-main rounded-circle d-flex justify-content-center align-items-center">
+                                <iconify-icon icon="ph:check-circle-bold" class="text-white text-2xl mb-0"></iconify-icon>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Terminés --}}
+            <div class="col">
+                <div class="card shadow-none border h-100">
+                    <div class="card-body p-20">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                            <div>
+                                <p class="fw-medium text-primary-light mb-1">Terminés</p>
+                                <h6 class="mb-0 text-info-main">
+                                    {{ $statistiques['totalCompletedAppointments'] }}
+                                </h6>
+                            </div>
+
+                            <div
+                                class="w-50-px h-50-px bg-info rounded-circle d-flex justify-content-center align-items-center">
+                                <iconify-icon icon="ph:syringe-bold" class="text-white text-2xl mb-0"></iconify-icon>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Annulés --}}
+            <div class="col">
+                <div class="card shadow-none border h-100">
+                    <div class="card-body p-20">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                            <div>
+                                <p class="fw-medium text-primary-light mb-1">Annulés</p>
+                                <h6 class="mb-0 text-danger-main">
+                                    {{ $statistiques['totalCancelledAppointments'] }}
+                                </h6>
+                            </div>
+
+                            <div
+                                class="w-50-px h-50-px bg-danger-main rounded-circle d-flex justify-content-center align-items-center">
+                                <iconify-icon icon="ph:x-circle-bold" class="text-white text-2xl mb-0"></iconify-icon>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        {{-- ══════════════════════════════════════
          SECTION 1 — REQUÊTES
     ══════════════════════════════════════ --}}
-        <p class="fw-semibold text-secondary-light text-sm mb-12 mt-4">📋 Requêtes</p>
+        {{-- <p class="fw-semibold text-secondary-light text-sm mb-12 mt-4">📋 Requêtes</p>
         <div class="row row-cols-xxxl-5 row-cols-lg-3 row-cols-sm-2 row-cols-1 gy-4 mb-24">
 
             <div class="col">
@@ -110,12 +222,12 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         {{-- ══════════════════════════════════════
          SECTION 2 — RÉSERVATIONS
     ══════════════════════════════════════ --}}
-        <p class="fw-semibold text-secondary-light text-sm mb-12">📦 Réservations</p>
+        {{-- <p class="fw-semibold text-secondary-light text-sm mb-12">📦 Réservations</p>
         <div class="row row-cols-xxxl-5 row-cols-lg-3 row-cols-sm-2 row-cols-1 gy-4 mb-24">
 
             <div class="col">
@@ -128,7 +240,8 @@
                             </div>
                             <div
                                 class="w-50-px h-50-px bg-info rounded-circle d-flex justify-content-center align-items-center">
-                                <iconify-icon icon="ph:calendar-check-bold" class="text-white text-2xl mb-0"></iconify-icon>
+                                <iconify-icon icon="ph:calendar-check-bold"
+                                    class="text-white text-2xl mb-0"></iconify-icon>
                             </div>
                         </div>
                     </div>
@@ -185,7 +298,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         {{-- ══════════════════════════════════════
          SECTION 3 — WALLET & AVIS
@@ -287,7 +400,7 @@
         {{-- ══════════════════════════════════════
          GRAPHIQUE
     ══════════════════════════════════════ --}}
-        <div class="row gy-4 mt-1">
+        {{-- <div class="row gy-4 mt-1">
             <div class="col-xxl-12 col-xl-12">
                 <div class="card h-100">
                     <div class="card-body">
@@ -370,7 +483,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
     </div>
 @endsection
