@@ -1,309 +1,636 @@
 @extends('layouts.master', ['title' => 'Ma Pharmacie'])
 
 @section('content')
-<div class="dashboard-main-body">
+    <style>
+        .dash-body {
+            margin-left: 100px;
+            margin-right: 100px;
+            padding: 28px;
+            min-height: 100%;
+        }
 
-    {{-- Header --}}
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
-        <h6 class="fw-semibold mb-0">Ma Pharmacie</h6>
-        <ul class="d-flex align-items-center gap-2">
-            <li class="fw-medium">
-                <a href="{{ url('pharma-index') }}" class="d-flex align-items-center gap-1 hover-text-primary">
-                    <iconify-icon icon="solar:home-smile-angle-outline" class="icon text-lg"></iconify-icon>
-                    Tableau de bord
-                </a>
-            </li>
-            <li>-</li>
-            <li class="fw-medium">Ma Pharmacie</li>
-        </ul>
-    </div>
+        /* ── Section card ── */
+        .p-card {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 16px;
+            border: none;
+        }
 
-    @include('layouts.statuts')
+        /* ── Section titles ── */
+        .section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
 
-    {{-- Card principale --}}
-    <div class="card shadow-none border radius-12 p-0">
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+        }
 
-        {{-- Photo de façade --}}
-        <div class="position-relative" style="height: 220px; overflow: hidden; border-radius: 12px 12px 0 0; background: #e9ecef;">
-            @if($pharmacy->facade_image)
-                <img src="{{ $pharmacy->facade_image }}" alt="{{ $pharmacy->name }}"
-                    class="w-100 h-100" style="object-fit: cover;">
-            @else
-                <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-gradient-start-1">
-                    <iconify-icon icon="healthicons:pharmacy-outline" style="font-size: 80px; color: #adb5bd;"></iconify-icon>
+        .section-title iconify-icon {
+            font-size: 1.1rem;
+        }
+
+        /* ── Modifier button ── */
+        .btn-modifier {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 11px;
+            border: 1.5px solid #e2e8f0;
+            background: white;
+            font-size: 12px;
+            font-weight: 600;
+            color: #334155;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            transition: all .15s;
+            text-decoration: none;
+        }
+
+        .btn-modifier:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+            color: #0f172a;
+        }
+
+        /* ── Pharmacy identity block ── */
+        .pharma-identity {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .pharma-logo {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            background: #16a34a;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            flex-shrink: 0;
+        }
+
+        .pharma-name {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 5px;
+        }
+
+        .pharma-badges {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .badge-plan {
+            display: inline-flex;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            background: #ecfdf5;
+            color: #16a34a;
+        }
+
+        .pharma-status {
+            font-size: 12px;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #16a34a;
+        }
+
+        /* ── Info grid ── */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px 24px;
+        }
+
+        .info-item-label {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .info-item-label iconify-icon {
+            font-size: .9rem;
+        }
+
+        .info-item-value {
+            font-size: 13px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        /* ── Abonnement plan card ── */
+        .plan-card {
+            background: linear-gradient(135deg, #16a34a 0%, #059669 100%);
+            border-radius: 16px;
+            padding: 20px 24px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .plan-label {
+            font-size: 11px;
+            font-weight: 600;
+            opacity: .75;
+            margin-bottom: 4px;
+        }
+
+        .plan-name {
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .plan-renew {
+            font-size: 12px;
+            opacity: .7;
+        }
+
+        .plan-price-label {
+            font-size: 11px;
+            opacity: .7;
+            text-align: right;
+            margin-bottom: 4px;
+        }
+
+        .plan-price {
+            font-size: 1.3rem;
+            font-weight: 800;
+            text-align: right;
+        }
+
+        /* ── Usage stats ── */
+        .usage-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .usage-item {}
+
+        .usage-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .usage-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        .usage-check {
+            color: #16a34a;
+            font-size: 1rem;
+        }
+
+        .usage-values {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 6px;
+        }
+
+        .usage-values span {
+            font-weight: 400;
+            color: #94a3b8;
+        }
+
+        .usage-bar {
+            height: 5px;
+            border-radius: 10px;
+            background: #f1f5f9;
+            overflow: hidden;
+        }
+
+        .usage-fill {
+            height: 100%;
+            border-radius: 10px;
+            background: #16a34a;
+        }
+
+        /* ── Gérer button ── */
+        .btn-gerer {
+            width: 100%;
+            padding: 13px;
+            border-radius: 13px;
+            border: 1.5px solid #e2e8f0;
+            background: white;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: 'DM Sans', sans-serif;
+            transition: all .15s;
+        }
+
+        .btn-gerer:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+        }
+
+        /* ── Réseau affilié ── */
+        .reseau-desc {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-bottom: 16px;
+        }
+
+        .partner-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f8fafc;
+            gap: 12px;
+        }
+
+        .partner-row:last-of-type {
+            border-bottom: none;
+        }
+
+        .partner-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #16a34a;
+            flex-shrink: 0;
+        }
+
+        .partner-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 2px;
+        }
+
+        .partner-sub {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .badge-partenaire {
+            padding: 5px 14px;
+            border-radius: 20px;
+            border: 1.5px solid #e2e8f0;
+            background: white;
+            font-size: 12px;
+            font-weight: 600;
+            color: #334155;
+            flex-shrink: 0;
+        }
+
+        /* ── Modal inputs ── */
+        .f-input {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 11px;
+            font-size: 13px;
+            color: #334155;
+            background: #f8fafc;
+            outline: none;
+            transition: border-color .15s;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .f-input:focus {
+            border-color: #16a34a;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(22, 163, 74, .1);
+        }
+
+        .field-lbl {
+            font-size: 12px;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 6px;
+        }
+
+        @media (max-width: 767.98px) {
+            .dash-body {
+                padding: 16px;
+            }
+
+            .info-grid,
+            .usage-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .plan-card {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+    </style>
+
+    <div class="dash-body">
+
+        @include('layouts.statuts')
+
+        {{-- ══ Profil de la pharmacie ══ --}}
+        <div class="p-card">
+            <div class="section-head">
+                <div class="section-title">
+                    <iconify-icon icon="ph:buildings-bold" style="color:#16a34a;"></iconify-icon>
+                    Profil de la pharmacie
                 </div>
-            @endif
-            {{-- Bouton changer photo via modal --}}
-            <button type="button" data-bs-toggle="modal" data-bs-target="#editModal"
-                class="btn btn-sm btn-primary position-absolute"
-                style="bottom: 16px; right: 16px; border-radius: 8px;">
-                <iconify-icon icon="ic:baseline-edit" class="me-1"></iconify-icon>
-                Modifier
+                <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#editModal" class="btn-modifier">
+                    <iconify-icon icon="ph:pencil-bold"></iconify-icon> Modifier
+                </a>
+            </div>
+
+            {{-- Identity --}}
+            <div class="pharma-identity">
+                <div class="pharma-logo">
+                    <iconify-icon icon="ph:heart-bold"></iconify-icon>
+                </div>
+                <div>
+                    <div class="pharma-name">{{ $pharmacy->name ?? 'Pharmacie du Centre Plateau' }}</div>
+                    <div class="pharma-badges">
+                        <span class="badge-plan">Plan Pro</span>
+                        <span class="pharma-status">
+                            <span class="status-dot"></span>
+                            Actif · Code: PCP-001
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Info grid --}}
+            <div class="info-grid">
+                <div>
+                    <div class="info-item-label">
+                        <iconify-icon icon="ph:phone-bold"></iconify-icon> Téléphone
+                    </div>
+                    <div class="info-item-value">{{ $pharmacy->phone_number ?? '+225 27 22 44 56 78' }}</div>
+                </div>
+                <div>
+                    <div class="info-item-label">
+                        <iconify-icon icon="ph:envelope-bold"></iconify-icon> Email
+                    </div>
+                    <div class="info-item-value">{{ $pharmacy->email ?? 'contact@pharmacie-plateau.ci' }}</div>
+                </div>
+                <div>
+                    <div class="info-item-label">
+                        <iconify-icon icon="ph:map-pin-bold"></iconify-icon> Adresse
+                    </div>
+                    <div class="info-item-value">
+                        {{ $pharmacy->address ?? '12 Avenue Terrasson de Fougères, Plateau, Abidjan' }}</div>
+                </div>
+                <div>
+                    <div class="info-item-label">
+                        <iconify-icon icon="ph:globe-bold"></iconify-icon> Ville
+                    </div>
+                    <div class="info-item-value">{{ $pharmacy->commune_name ?? 'Abidjan' }}</div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ══ Abonnement ══ --}}
+        <div class="p-card">
+            <div class="section-head mb-3">
+                <div class="section-title">
+                    <iconify-icon icon="ph:credit-card-bold" style="color:#9333ea;"></iconify-icon>
+                    Abonnement
+                </div>
+            </div>
+
+            {{-- Plan card --}}
+            <div class="plan-card">
+                <div>
+                    <div class="plan-label">Plan actuel</div>
+                    <div class="plan-name">Plan Pro</div>
+                    <div class="plan-renew">Renouvellement: 15 janv. 2027</div>
+                </div>
+                <div>
+                    <div class="plan-price-label">Mensuel</div>
+                    <div class="plan-price">45 000 XOF</div>
+                </div>
+            </div>
+
+            {{-- Usage stats --}}
+            <div class="usage-grid">
+                <div class="usage-item">
+                    <div class="usage-head">
+                        <span class="usage-label">Patients max</span>
+                        <iconify-icon icon="ph:check-circle-bold" class="usage-check"></iconify-icon>
+                    </div>
+                    <div class="usage-values">148 <span>/ 500</span></div>
+                    <div class="usage-bar">
+                        <div class="usage-fill" style="width:{{ (148 / 500) * 100 }}%;"></div>
+                    </div>
+                </div>
+                <div class="usage-item">
+                    <div class="usage-head">
+                        <span class="usage-label">Messages/mois</span>
+                        <iconify-icon icon="ph:check-circle-bold" class="usage-check"></iconify-icon>
+                    </div>
+                    <div class="usage-values">214 <span>/ 2000</span></div>
+                    <div class="usage-bar">
+                        <div class="usage-fill" style="width:{{ (214 / 2000) * 100 }}%;"></div>
+                    </div>
+                </div>
+                <div class="usage-item">
+                    <div class="usage-head">
+                        <span class="usage-label">Campagnes actives</span>
+                        <iconify-icon icon="ph:check-circle-bold" class="usage-check"></iconify-icon>
+                    </div>
+                    <div class="usage-values">1 <span>/ 5</span></div>
+                    <div class="usage-bar">
+                        <div class="usage-fill" style="width:{{ (1 / 5) * 100 }}%;"></div>
+                    </div>
+                </div>
+                <div class="usage-item">
+                    <div class="usage-head">
+                        <span class="usage-label">Membres équipe</span>
+                        <iconify-icon icon="ph:check-circle-bold" class="usage-check"></iconify-icon>
+                    </div>
+                    <div class="usage-values">4 <span>/ 10</span></div>
+                    <div class="usage-bar">
+                        <div class="usage-fill" style="width:{{ (4 / 10) * 100 }}%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-gerer">
+                <iconify-icon icon="ph:credit-card-bold"></iconify-icon> Gérer l'abonnement
             </button>
         </div>
 
-        <div class="card-body p-24">
-
-            {{-- Nom et commune --}}
-            <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-24">
-                <div>
-                    <h4 class="fw-bold text-primary-light mb-4">{{ $pharmacy->name ?? '—' }}</h4>
-                    <p class="text-secondary-light mb-0 d-flex align-items-center gap-1">
-                        <iconify-icon icon="solar:map-point-bold"></iconify-icon>
-                        {{ $pharmacy->commune_name ?? '—' }} — {{ $pharmacy->address ?? '—' }}
-                    </p>
-                </div>
-                <button type="button" data-bs-toggle="modal" data-bs-target="#editModal"
-                    class="btn btn-outline-primary d-flex align-items-center gap-2">
-                    <iconify-icon icon="ic:baseline-edit"></iconify-icon>
-                    Modifier les informations
-                </button>
-            </div>
-
-            <hr class="my-20">
-
-            {{-- Détails --}}
-            <div class="row gy-4">
-
-                <div class="col-md-6 col-xl-4">
-                    <div class="d-flex align-items-start gap-12">
-                        <div class="w-40-px h-40-px bg-primary-50 rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">
-                            <iconify-icon icon="ph:phone-bold" class="text-primary-600"></iconify-icon>
-                        </div>
-                        <div>
-                            <p class="text-secondary-light text-sm mb-2">Téléphone</p>
-                            <p class="fw-semibold text-primary-light mb-0">{{ $pharmacy->phone_number ?? '—' }}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-xl-4">
-                    <div class="d-flex align-items-start gap-12">
-                        <div class="w-40-px h-40-px bg-success-focus rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">
-                            <iconify-icon icon="ri:whatsapp-line" class="text-success-main"></iconify-icon>
-                        </div>
-                        <div>
-                            <p class="text-secondary-light text-sm mb-2">WhatsApp</p>
-                            <p class="fw-semibold text-primary-light mb-0">{{ $pharmacy->whats_app_phone_number ?? '—' }}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-xl-4">
-                    <div class="d-flex align-items-start gap-12">
-                        <div class="w-40-px h-40-px bg-warning-focus rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">
-                            <iconify-icon icon="ph:user-bold" class="text-warning-main"></iconify-icon>
-                        </div>
-                        <div>
-                            <p class="text-secondary-light text-sm mb-2">Propriétaire</p>
-                            <p class="fw-semibold text-primary-light mb-0">{{ $pharmacy->owner_name ?? '—' }}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-xl-4">
-                    <div class="d-flex align-items-start gap-12">
-                        <div class="w-40-px h-40-px bg-info-focus rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">
-                            <iconify-icon icon="ph:clock-bold" class="text-info-main"></iconify-icon>
-                        </div>
-                        <div>
-                            <p class="text-secondary-light text-sm mb-2">Horaires</p>
-                            <p class="fw-semibold text-primary-light mb-0">
-                                {{ $pharmacy->opening_hours ?? '—' }} — {{ $pharmacy->closing_hours ?? '—' }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-xl-4">
-                    <div class="d-flex align-items-start gap-12">
-                        <div class="w-40-px h-40-px bg-cyan-focus rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">
-                            <iconify-icon icon="ph:map-pin-bold" class="text-cyan"></iconify-icon>
-                        </div>
-                        <div>
-                            <p class="text-secondary-light text-sm mb-2">Coordonnées GPS</p>
-                            <a href="{{ $pharmacy->gps_coordinates ?? '#' }}" target="_blank" class="fw-semibold text-primary-light mb-0">
-                                {{ $pharmacy->gps_coordinates ?? '—' }}
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            <hr class="my-24">
-
-            {{-- Assurances --}}
-            @if($assurances->count())
-            <div class="mb-24">
-                <h6 class="fw-semibold text-primary-light mb-16">Assurances acceptées</h6>
-                <div class="d-flex flex-wrap gap-12">
-                    @foreach($assurances as $ass)
-                    <div class="d-flex align-items-center gap-8 border radius-8 px-12 py-8">
-                        @if($ass->assurance_picture)
-                            <img src="{{ $ass->assurance_picture }}" height="28" width="28" class="rounded" alt="{{ $ass->name }}">
-                        @else
-                            <iconify-icon icon="ph:shield-check-bold" class="text-primary-600 text-xl"></iconify-icon>
-                        @endif
-                        <span class="fw-medium text-sm">{{ $ass->name }}</span>
-                    </div>
-                    @endforeach
+        {{-- ══ Réseau affilié ══ --}}
+        <div class="p-card">
+            <div class="section-head mb-2">
+                <div class="section-title">
+                    <iconify-icon icon="ph:users-three-bold" style="color:#2563eb;"></iconify-icon>
+                    Réseau affilié
                 </div>
             </div>
-            @endif
 
-            {{-- Moyens de paiement --}}
-            @if($paymentMethods->count())
-            <div>
-                <h6 class="fw-semibold text-primary-light mb-16">Moyens de paiement</h6>
-                <div class="d-flex flex-wrap gap-12">
-                    @foreach($paymentMethods as $pm)
-                    <div class="d-flex align-items-center gap-8 border radius-8 px-12 py-8">
-                        @if($pm->payment_method_picture)
-                            <img src="{{ $pm->payment_method_picture }}" height="28" width="28" class="rounded" alt="{{ $pm->name }}">
-                        @else
-                            <iconify-icon icon="ph:credit-card-bold" class="text-primary-600 text-xl"></iconify-icon>
-                        @endif
-                        <span class="fw-medium text-sm">{{ $pm->name }}</span>
+            <p class="reseau-desc">Pharmacies partenaires pouvant accéder aux dossiers avec consentement réseau actif.</p>
+
+            <div class="partner-row">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="partner-dot"></div>
+                    <div>
+                        <div class="partner-name">Pharmacie Koumassi Centre</div>
+                        <div class="partner-sub">Koumassi, Abidjan · 8 patients partagés</div>
                     </div>
-                    @endforeach
                 </div>
+                <span class="badge-partenaire">Partenaire</span>
             </div>
-            @endif
 
+            <div class="partner-row">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="partner-dot"></div>
+                    <div>
+                        <div class="partner-name">Pharmacie Les 2 Plateaux</div>
+                        <div class="partner-sub">Cocody, Abidjan · 3 patients partagés</div>
+                    </div>
+                </div>
+                <span class="badge-partenaire">Partenaire</span>
+            </div>
+
+            <button class="btn-gerer mt-3">
+                <iconify-icon icon="ph:chat-circle-dots-bold"></iconify-icon> Gérer les affiliations
+            </button>
         </div>
+
     </div>
 
-</div>
+    {{-- ══ Modal modification ══ --}}
+    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content" style="border-radius:20px;border:none;">
+                <div class="modal-header" style="background:#16a34a;border-radius:20px 20px 0 0;padding:18px 26px;">
+                    <h5 class="modal-title text-white fw-bold"
+                        style="font-size:15px;display:flex;align-items:center;gap:8px;">
+                        <iconify-icon icon="ph:pencil-bold"></iconify-icon> Modifier les informations
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form action="{{ url('ma-pharmacie/update') }}" method="POST" enctype="multipart/form-data">
+                        @csrf @method('POST')
+                        <div class="row g-3">
 
-{{-- ============================================================ --}}
-{{-- MODAL MODIFICATION                                           --}}
-{{-- ============================================================ --}}
-<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content radius-16 bg-base">
+                            <div class="col-12">
+                                <div class="field-lbl">Photo de façade</div>
+                                <input type="file" name="facade_image" class="f-input" accept=".jpg,.jpeg,.png">
+                                @if ($pharmacy->facade_image ?? false)
+                                    <div class="mt-2">
+                                        <img src="{{ $pharmacy->facade_image }}" height="60" class="rounded"
+                                            alt="Façade">
+                                    </div>
+                                @endif
+                            </div>
 
-            <div class="modal-header py-16 px-24 border-bottom">
-                <h5 class="modal-title fw-semibold">Modifier les informations</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-
-            <div class="modal-body p-24">
-                <form action="{{ url('ma-pharmacie/update') }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    @method('POST')
-
-                    <div class="row gy-16">
-
-                        {{-- Photo de façade --}}
-                        <div class="col-12">
-                            <label class="form-label fw-semibold text-primary-light text-sm mb-8">
-                                Photo de façade
-                            </label>
-                            <input type="file" name="facade_image" class="form-control radius-8"
-                                accept=".jpg,.jpeg,.png">
-                            @if($pharmacy->facade_image)
-                                    <small class="text-secondary-light ms-8">Photo actuelle</small>
-                                <div class="mt-8">
-                                    <img src="{{ $pharmacy->facade_image }}" height="60" class="rounded" alt="Façade actuelle">
-                                </div>
-                            @endif
+                            <div class="col-md-6">
+                                <div class="field-lbl">Nom de la pharmacie <span style="color:#dc2626;">*</span></div>
+                                <input required type="text" name="name" class="f-input"
+                                    value="{{ $pharmacy->name ?? '' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="field-lbl">Nom du propriétaire</div>
+                                <input type="text" name="owner_name" class="f-input"
+                                    value="{{ $pharmacy->owner_name ?? '' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="field-lbl">Adresse</div>
+                                <input type="text" name="address" class="f-input"
+                                    value="{{ $pharmacy->address ?? '' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="field-lbl">Commune <span style="color:#dc2626;">*</span></div>
+                                <select required name="commune_id" class="f-input" style="appearance:none;">
+                                    @foreach ($communes as $commune)
+                                        <option value="{{ $commune->id_commune }}"
+                                            {{ ($pharmacy->commune_id ?? '') == $commune->id_commune ? 'selected' : '' }}>
+                                            {{ $commune->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="field-lbl">Téléphone</div>
+                                <input type="text" name="phone_number" class="f-input"
+                                    value="{{ $pharmacy->phone_number ?? '' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="field-lbl">WhatsApp</div>
+                                <input type="text" name="whats_app_phone_number" class="f-input"
+                                    value="{{ $pharmacy->whats_app_phone_number ?? '' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="field-lbl">Heure d'ouverture</div>
+                                <input type="text" name="opening_hours" class="f-input" placeholder="ex: 08h00"
+                                    value="{{ $pharmacy->opening_hours ?? '' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="field-lbl">Heure de fermeture</div>
+                                <input type="text" name="closing_hours" class="f-input" placeholder="ex: 20h00"
+                                    value="{{ $pharmacy->closing_hours ?? '' }}">
+                            </div>
+                            <div class="col-12">
+                                <div class="field-lbl">Coordonnées GPS</div>
+                                <input type="text" name="gps_coordinates" class="f-input"
+                                    placeholder="ex: 5.3364,-4.0267" value="{{ $pharmacy->gps_coordinates ?? '' }}">
+                            </div>
                         </div>
 
-                        {{-- Nom --}}
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold text-primary-light text-sm mb-8">
-                                Nom de la pharmacie <span class="text-danger">*</span>
-                            </label>
-                            <input required type="text" name="name" class="form-control radius-8"
-                                value="{{ $pharmacy->name }}">
+                        <div class="d-flex justify-content-end gap-3 mt-4">
+                            <button type="button" data-bs-dismiss="modal"
+                                style="padding:10px 22px;border-radius:11px;border:1.5px solid #e2e8f0;background:white;font-size:13px;font-weight:600;color:#475569;cursor:pointer;">
+                                Annuler
+                            </button>
+                            <button type="submit"
+                                style="padding:10px 24px;border-radius:11px;border:none;background:#16a34a;color:white;font-size:13px;font-weight:600;cursor:pointer;">
+                                Enregistrer
+                            </button>
                         </div>
-
-                        {{-- Propriétaire --}}
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold text-primary-light text-sm mb-8">
-                                Nom du propriétaire
-                            </label>
-                            <input type="text" name="owner_name" class="form-control radius-8"
-                                value="{{ $pharmacy->owner_name }}">
-                        </div>
-
-                        {{-- Adresse --}}
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold text-primary-light text-sm mb-8">Adresse</label>
-                            <input type="text" name="address" class="form-control radius-8"
-                                value="{{ $pharmacy->address }}">
-                        </div>
-
-                        {{-- Commune --}}
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold text-primary-light text-sm mb-8">
-                                Commune <span class="text-danger">*</span>
-                            </label>
-                            <select required name="commune_id" class="form-select radius-8">
-                                @foreach($communes as $commune)
-                                    <option value="{{ $commune->id_commune }}"
-                                        {{ $pharmacy->commune_id == $commune->id_commune ? 'selected' : '' }}>
-                                        {{ $commune->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        {{-- Téléphone --}}
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold text-primary-light text-sm mb-8">Téléphone</label>
-                            <input type="text" name="phone_number" class="form-control radius-8"
-                                value="{{ $pharmacy->phone_number }}">
-                        </div>
-
-                        {{-- WhatsApp --}}
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold text-primary-light text-sm mb-8">WhatsApp</label>
-                            <input type="text" name="whats_app_phone_number" class="form-control radius-8"
-                                value="{{ $pharmacy->whats_app_phone_number }}">
-                        </div>
-
-                        {{-- Heure ouverture --}}
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold text-primary-light text-sm mb-8">Heure d'ouverture</label>
-                            <input type="text" name="opening_hours" class="form-control radius-8"
-                                placeholder="ex: 08h00" value="{{ $pharmacy->opening_hours }}">
-                        </div>
-
-                        {{-- Heure fermeture --}}
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold text-primary-light text-sm mb-8">Heure de fermeture</label>
-                            <input type="text" name="closing_hours" class="form-control radius-8"
-                                placeholder="ex: 20h00" value="{{ $pharmacy->closing_hours }}">
-                        </div>
-
-                        {{-- GPS --}}
-                        <div class="col-12">
-                            <label class="form-label fw-semibold text-primary-light text-sm mb-8">
-                                Coordonnées GPS
-                                {{-- <small class="text-secondary-light fw-normal">(latitude,longitude)</small> --}}
-                            </label>
-                            <input type="text" name="gps_coordinates" class="form-control radius-8"
-                                placeholder="ex: 5.3364,-4.0267" value="{{ $pharmacy->gps_coordinates }}">
-                        </div>
-
-                    </div>
-
-                    <div class="d-flex justify-content-end gap-3 mt-24">
-                        <button type="button" data-bs-dismiss="modal"
-                            class="border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-40 py-11 radius-8">
-                            Annuler
-                        </button>
-                        <button type="submit"
-                            class="btn btn-primary border border-primary-600 text-md px-40 py-12 radius-8">
-                            Enregistrer
-                        </button>
-                    </div>
-
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
 @endsection

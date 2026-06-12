@@ -1,143 +1,66 @@
-<div class="navbar-header">
-    <div class="row align-items-center justify-content-between">
-        <div class="col-auto">
-            <div class="d-flex flex-wrap align-items-center gap-4">
-                <button type="button" class="sidebar-toggle">
-                    <iconify-icon icon="heroicons:bars-3-solid" class="icon text-2xl non-active" style="color: black"></iconify-icon>
-                    <iconify-icon icon="iconoir:arrow-right" class="icon text-2xl active" style="color: black"></iconify-icon>
-                </button>
-                <button type="button" class="sidebar-mobile-toggle">
-                    <iconify-icon icon="heroicons:bars-3-solid" class="icon" style="color: black"></iconify-icon>
-                </button>
-            </div>
+<div class="navbar-header" style="background-color: #ffffff; padding: 16px 24px; border-bottom: 1px solid #f1f5f9;">
+    <div class="d-flex align-items-center justify-content-between w-100">
+
+        <div>
+            <p class="mb-0 fw-bold text-dark" style="font-size: 0.9rem;">Tableau de bord</p>
+            <span class="text-muted" style="font-size: 0.85rem;">
+                Bonjour, {{ Auth::guard('pharmacien')->user()->first_name ?? 'Yapi' }} · {{ \Carbon\Carbon::now()->locale('fr')->translatedFormat('l j F') }}
+            </span>
         </div>
-        <div class="col-auto">
-            <div class="d-flex flex-wrap align-items-center gap-3">
-                <button type="button" data-theme-toggle
-                    class="w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center"></button>
-                {{-- <div class="dropdown d-none d-sm-inline-block">
-                    <button
-                        class="has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center"
-                        type="button" data-bs-toggle="dropdown">
-                        <img src="{{ URL::asset('') }}assets/images/lang-flag.png" alt="image"
-                            class="w-24 h-24 object-fit-cover rounded-circle">
-                    </button>
-                    <div class="dropdown-menu to-top dropdown-menu-sm">
-                        <div
-                            class="py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
+
+        <div class="d-flex align-items-center gap-3">
+
+            <button type="button" class="btn p-0 d-flex justify-content-center align-items-center"
+                style="width: 40px; height: 40px; background-color: transparent; border: none; color: #64748b;">
+                <iconify-icon icon="solar:qr-code-outline" style="font-size: 1.4rem;"></iconify-icon>
+            </button>
+
+            <div class="dropdown">
+                <button class="position-relative p-0 d-flex justify-content-center align-items-center" type="button"
+                    data-bs-toggle="dropdown"
+                    style="width: 40px; height: 40px; background-color: transparent; border: none; color: #64748b;">
+                    <iconify-icon icon="solar:bell-bing-outline" style="font-size: 1.4rem;"></iconify-icon>
+                    <span
+                        class="position-absolute top-2 start-65 translate-middle badge rounded-circle bg-danger d-flex align-items-center justify-content-center text-white"
+                        style="font-size: 0.65rem; min-width: 16px; height: 16px; padding: 0;">
+                        9
+                    </span>
+                </button>
+
+                <div class="dropdown-menu dropdown-menu-end p-0 shadow-sm border-0"
+                    style="border-radius: 12px; width: 320px;">
+                    <div class="py-12 px-16 bg-light d-flex align-items-center justify-content-between"
+                        style="border-top-left-radius: 12px; border-top-right-radius: 12px;">
+                        <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.9rem;">Notifications</h6>
+                        <span class="badge bg-danger-subtle text-danger px-8 py-4 rounded-pill"
+                            style="font-size: 0.75rem;">9 Nouvelles</span>
+                    </div>
+                    <div class="max-h-300-px overflow-y-auto">
+                        <a href="javascript:void(0)"
+                            class="dropdown-item px-16 py-12 border-bottom text-wrap d-flex gap-3"
+                            style="font-size: 0.85rem;">
+                            <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                                style="width: 36px; height: 36px;">
+                                <iconify-icon icon="solar:bell-linear"></iconify-icon>
+                            </div>
                             <div>
-                                <h6 class="text-lg text-primary-light fw-semibold mb-0">Choisir votre langue
-                                </h6>
+                                <p class="mb-0 text-dark fw-medium">Nouveau message reçu</p>
+                                <small class="text-muted">Il y a 5 min</small>
                             </div>
-                        </div>
-
-                        <div class="max-h-400-px overflow-y-auto scroll-sm pe-8">
-                            <div class="form-check style-check d-flex align-items-center justify-content-between mb-16">
-                                <label class="form-check-label line-height-1 fw-medium text-secondary-light"
-                                    for="english">
-                                    <span
-                                        class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3">
-                                        <img src="{{ URL::asset('') }}assets/images/flags/flag1.png" alt=""
-                                            class="w-36-px h-36-px bg-success-subtle text-success-main rounded-circle flex-shrink-0">
-                                        <span class="text-md fw-semibold mb-0">English</span>
-                                    </span>
-                                </label>
-                                <input class="form-check-input" type="radio" name="crypto" id="english">
-                            </div>
-
-                            <div class="form-check style-check d-flex align-items-center justify-content-between mb-16">
-                                <label class="form-check-label line-height-1 fw-medium text-secondary-light"
-                                    for="france">
-                                    <span
-                                        class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3">
-                                        <img src="{{ URL::asset('') }}assets/images/flags/flag3.png" alt=""
-                                            class="w-36-px h-36-px bg-success-subtle text-success-main rounded-circle flex-shrink-0">
-                                        <span class="text-md fw-semibold mb-0">France</span>
-                                    </span>
-                                </label>
-                                <input class="form-check-input" type="radio" name="crypto" id="france">
-                            </div>
-                        </div>
+                        </a>
+                    </div>
+                    <div class="text-center py-10">
+                        <a href="{{ url('rappels') }}" class="text-success fw-semibold"
+                            style="font-size: 0.8rem; text-decoration: none;">Gérer les rappels</a>
                     </div>
                 </div>
-
-                <div class="dropdown">
-                    <button
-                        class="has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center"
-                        type="button" data-bs-toggle="dropdown">
-                        <iconify-icon icon="iconoir:bell" class="text-primary-light text-xl"></iconify-icon>
-                    </button>
-                    <div class="dropdown-menu to-top dropdown-menu-lg p-0">
-                        <div
-                            class="m-16 py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
-                            <div>
-                                <h6 class="text-lg text-primary-light fw-semibold mb-0">Notifications</h6>
-                            </div>
-                            <span
-                                class="text-primary-600 fw-semibold text-lg w-40-px h-40-px rounded-circle bg-base d-flex justify-content-center align-items-center">05</span>
-                        </div>
-
-                        <div class="max-h-400-px overflow-y-auto scroll-sm pe-4">
-                            <a href="javascript:void(0)"
-                                class="px-24 py-12 d-flex align-items-start gap-3 mb-2 justify-content-between">
-                                <div
-                                    class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3">
-                                    <span
-                                        class="w-44-px h-44-px bg-success-subtle text-success-main rounded-circle d-flex justify-content-center align-items-center flex-shrink-0">
-                                        <iconify-icon icon="bitcoin-icons:verify-outline"
-                                            class="icon text-xxl"></iconify-icon>
-                                    </span>
-                                    <div>
-                                        <h6 class="text-md fw-semibold mb-4">Congratulations</h6>
-                                        <p class="mb-0 text-sm text-secondary-light text-w-200-px">Your profile
-                                            has been Verified. Your profile has been Verified</p>
-                                    </div>
-                                </div>
-                                <span class="text-sm text-secondary-light flex-shrink-0">23 Mins ago</span>
-                            </a>
-                        </div>
-
-                        <div class="text-center py-12 px-16">
-                            <a href="javascript:void(0)" class="text-primary-600 fw-semibold text-md">Voir toutes les
-                                Notifications</a>
-                        </div>
-
-                    </div>
-                </div> --}}
-
-                <div class="dropdown">
-                    <button class="d-flex justify-content-center align-items-center rounded-circle" type="button"
-                        data-bs-toggle="dropdown">
-                        <img src="{{ URL::asset('') }}assets/images/user.png" alt="image"
-                            class="w-40-px h-40-px object-fit-cover rounded-circle">
-                    </button>
-                    <div class="dropdown-menu to-top dropdown-menu-sm">
-                        <div
-                            class="py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
-                            <div>
-                                <h6 class="text-lg text-primary-light fw-semibold mb-2">{{ Auth::guard('pharmacien')->user()->first_name }} {{ Auth::guard('pharmacien')->user()->last_name }}</h6>
-                                <span class="text-secondary-light fw-medium text-sm">{{ Auth::guard('pharmacien')->user()->role }}</span>
-                            </div>
-                            <button type="button" class="hover-text-danger">
-                                <iconify-icon icon="radix-icons:cross-1" class="icon text-xl"></iconify-icon>
-                            </button>
-                        </div>
-                        <ul class="to-top-list">
-                            <li>
-                                <a class="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-primary d-flex align-items-center gap-3"
-                                    href="{{ url('view-profile') }}">
-                                    <iconify-icon icon="solar:user-linear" class="icon text-xl"></iconify-icon> Mon
-                                    Profil</a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-danger d-flex align-items-center gap-3"
-                                    href="{{ url('logout') }}">
-                                    <iconify-icon icon="lucide:power" class="icon text-xl"></iconify-icon> Se deconnecter</a>
-                            </li>
-                        </ul>
-                    </div>
-                </div><!-- Profile dropdown end -->
             </div>
+
+            <span class="d-flex justify-content-center align-items-center rounded-circle border-0 p-0"
+                style="width: 40px; height: 40px; background-color: #ccf1e1; color: #0ea5e9; font-weight: 700; font-size: 0.9rem;">
+                {{ strtoupper(substr(Auth::guard('pharmacien')->user()->first_name ?? 'A', 0, 1)) }}{{ strtoupper(substr(Auth::guard('pharmacien')->user()->last_name ?? 'K', 0, 1)) }}
+            </span>
+
         </div>
     </div>
 </div>

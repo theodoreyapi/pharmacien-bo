@@ -14,7 +14,7 @@ class PharmacyProfileController extends Controller
     public function index()
     {
         if (!Auth::guard('pharmacien')->check()) {
-            return redirect()->route('login');
+            return redirect()->route('logout');
         }
 
         $pharmacyId = Auth::guard('pharmacien')->user()->pharmacy_id;

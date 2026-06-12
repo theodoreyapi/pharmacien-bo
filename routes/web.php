@@ -2,20 +2,28 @@
 
 use App\Http\Controllers\AboutController;
 use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\CampagneController;
 use App\Http\Controllers\ConditionController;
 use App\Http\Controllers\CustomAuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\MentionController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PatientActionsController;
+use App\Http\Controllers\PatientsController;
 use App\Http\Controllers\PaymentWaveController;
 use App\Http\Controllers\PharmacienController;
 use App\Http\Controllers\PharmacienViewController;
 use App\Http\Controllers\PharmacyProfileController;
 use App\Http\Controllers\PolicyController;
+use App\Http\Controllers\RappelController;
 use App\Http\Controllers\RechargementController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\StatistiqueController;
 use App\Models\Commune;
 use App\Models\Pharmacy;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
@@ -51,162 +59,7 @@ Route::get('forgot', function () {
 });
 
 // tableau de bord
-Route::get('pharma-index', function () {
-
-    if (!Auth::guard('pharmacien')->check()) {
-        return redirect()->route('logout');
-    }
-
-    $pharmacien = Auth::guard('pharmacien')->user();
-    $pharmacyId = $pharmacien->pharmacy_id;
-    $username   = $pharmacien->username;
-    $currentYear = date('Y');
-
-    // ── Requêtes ──────────────────────────────────────────────────────
-    $totalReceived = DB::table('pharmacy_request')
-        ->where('pharmacy_id', $pharmacyId)->count();
-
-    $totalSent = DB::table('pharmacy_request')
-        ->where('pharmacy_id', $pharmacyId)
-        ->whereNotNull('status')->where('status', '!=', 'EN_ATTENTE')->count();
-
-    $totalAcceptees = DB::table('pharmacy_request')
-        ->where('pharmacy_id', $pharmacyId)->where('status', 'ACCEPTEE')->count();
-
-    $totalRefusees = DB::table('pharmacy_request')
-        ->where('pharmacy_id', $pharmacyId)->where('status', 'REFUSEE')->count();
-
-    $totalEnAttente = DB::table('pharmacy_request')
-        ->where('pharmacy_id', $pharmacyId)
-        ->where(function ($q) {
-            $q->where('status', 'EN_ATTENTE')->orWhereNull('status');
-        })->count();
-
-    // ── Réservations ──────────────────────────────────────────────────
-    $totalReservations = DB::table('reservation_medicament')
-        ->where('pharmacy_id', $pharmacyId)->count();
-
-    $totalReserve = DB::table('reservation_medicament')
-        ->where('pharmacy_id', $pharmacyId)->where('status', 'RESERVE')->count();
-
-    $totalServi = DB::table('reservation_medicament')
-        ->where('pharmacy_id', $pharmacyId)->where('status', 'SERVI')->count();
-
-    $totalExpire = DB::table('reservation_medicament')
-        ->where('pharmacy_id', $pharmacyId)
-        ->where('status', 'RESERVE')
-        ->where('date_expiration', '<', now())->count();
-
-    // ── Wallet ────────────────────────────────────────────────────────
-    $solde = number_format($pharmacien->amount ?? 0, 0, ',', ' ') . ' FCFA';
-
-    $totalCredit = DB::table('transfert')
-        ->where('receiver_username', $username)->where('type_operation', 'CREDIT')->sum('amount');
-
-    $totalDebit = DB::table('transfert')
-        ->where('sender_username', $username)->where('type_operation', 'DEBIT')->sum('amount');
-
-    $totalRechargements = DB::table('rechargements')
-        ->where('username', $username)->where('status', 'success')->sum('montant');
-
-    // ── Avis ──────────────────────────────────────────────────────────
-    $allReviews   = DB::table('review')->where('pharmacy_id', $pharmacyId)->get();
-    $totalAvis    = $allReviews->count();
-    $noteMoyenne  = $totalAvis > 0 ? round($allReviews->avg('evaluation'), 1) : 0;
-
-    // ── Statistiques par mois ─────────────────────────────────────────
-    $moisFr = [
-        '01' => 'Jan',
-        '02' => 'Fév',
-        '03' => 'Mar',
-        '04' => 'Avr',
-        '05' => 'Mai',
-        '06' => 'Juin',
-        '07' => 'Juil',
-        '08' => 'Août',
-        '09' => 'Sep',
-        '10' => 'Oct',
-        '11' => 'Nov',
-        '12' => 'Déc',
-    ];
-
-    $requestsParMois = DB::table('pharmacy_request')
-        ->selectRaw("DATE_FORMAT(created_at, '%m') as mois_num, COUNT(*) as total")
-        ->where('pharmacy_id', $pharmacyId)->whereYear('created_at', $currentYear)
-        ->groupByRaw("DATE_FORMAT(created_at, '%m')")->pluck('total', 'mois_num')->toArray();
-
-    $responsesParMois = DB::table('pharmacy_request')
-        ->selectRaw("DATE_FORMAT(updated_at, '%m') as mois_num, COUNT(*) as total")
-        ->where('pharmacy_id', $pharmacyId)->whereYear('updated_at', $currentYear)
-        ->whereNotNull('status')->where('status', '!=', 'EN_ATTENTE')
-        ->groupByRaw("DATE_FORMAT(updated_at, '%m')")->pluck('total', 'mois_num')->toArray();
-
-    $reservationsParMois = DB::table('reservation_medicament')
-        ->selectRaw("DATE_FORMAT(date_reservation, '%m') as mois_num, COUNT(*) as total")
-        ->where('pharmacy_id', $pharmacyId)->whereYear('date_reservation', $currentYear)
-        ->groupByRaw("DATE_FORMAT(date_reservation, '%m')")->pluck('total', 'mois_num')->toArray();
-
-    $souscriptions = [];
-    foreach ($moisFr as $num => $label) {
-        $souscriptions[] = [
-            'mois'             => $label,
-            'requestCount'     => (int) ($requestsParMois[$num]     ?? 0),
-            'responseCount'    => (int) ($responsesParMois[$num]    ?? 0),
-            'reservationCount' => (int) ($reservationsParMois[$num] ?? 0),
-        ];
-    }
-
-    // ── Rendez-vous Vaccination ─────────────────────────────────────
-    $totalAppointments = DB::table('appointments')
-        ->where('pharmacy_id', $pharmacyId)
-        ->count();
-
-    $totalPendingAppointments = DB::table('appointments')
-        ->where('pharmacy_id', $pharmacyId)
-        ->where('status', 'pending')
-        ->count();
-
-    $totalConfirmedAppointments = DB::table('appointments')
-        ->where('pharmacy_id', $pharmacyId)
-        ->where('status', 'confirmed')
-        ->count();
-
-    $totalCompletedAppointments = DB::table('appointments')
-        ->where('pharmacy_id', $pharmacyId)
-        ->where('status', 'completed')
-        ->count();
-
-    $totalCancelledAppointments = DB::table('appointments')
-        ->where('pharmacy_id', $pharmacyId)
-        ->where('status', 'cancelled')
-        ->count();
-
-    $statistiques = [
-        'totalReceived'     => $totalReceived,
-        'totalSent'         => $totalSent,
-        'totalAcceptees'    => $totalAcceptees,
-        'totalRefusees'     => $totalRefusees,
-        'totalEnAttente'    => $totalEnAttente,
-        'totalReservations' => $totalReservations,
-        'totalReserve'      => $totalReserve,
-        'totalServi'        => $totalServi,
-        'totalExpire'       => $totalExpire,
-        'totalCredit'       => number_format($totalCredit, 0, ',', ' '),
-        'totalDebit'        => number_format($totalDebit, 0, ',', ' '),
-        'totalRechargements' => number_format($totalRechargements, 0, ',', ' '),
-        'totalAvis'         => $totalAvis,
-        'noteMoyenne'       => $noteMoyenne,
-
-        // Rendez-vous
-        'totalAppointments'          => $totalAppointments,
-        'totalPendingAppointments'   => $totalPendingAppointments,
-        'totalConfirmedAppointments' => $totalConfirmedAppointments,
-        'totalCompletedAppointments' => $totalCompletedAppointments,
-        'totalCancelledAppointments' => $totalCancelledAppointments,
-    ];
-
-    return view('home.pharma-index', compact('statistiques', 'souscriptions', 'solde'));
-});
+Route::get('pharma-index', [DashboardController::class, 'index']);
 
 // utilisateurs
 Route::get('user-add', function () {
@@ -249,6 +102,41 @@ Route::resource('terms-condition', ConditionController::class);
 // setting
 Route::resource('equipes', PharmacienController::class);
 Route::post('profile', [PharmacienController::class, 'profile']);
+
+// Suivi des patients
+// Ressource principale (index, create, store, show, edit, update, destroy)
+Route::get('/patients/search-qr', [PatientsController::class, 'searchByQr'])->name('patients.search_qr');
+Route::resource('patients', PatientsController::class);
+// Supposons également que votre route de détail ressemble à ceci :
+Route::get('/patients/{id}', [PatientsController::class, 'show'])->name('patients.show');
+
+// ── Actions du dossier patient ──
+Route::prefix('patients/{patient}')->name('patients.')->group(function () {
+
+    // Pathologies
+    Route::post('pathologie', [PatientActionsController::class, 'storePathologie'])->name('pathologie.store');
+
+    // Traitements
+    Route::post('traitement', [PatientActionsController::class, 'storeTraitement'])->name('traitement.store');
+    Route::post('traitement/{traitement}/renouveler', [PatientActionsController::class, 'renouvelerTraitement'])->name('traitement.renouveler');
+
+    // Mesures cliniques
+    Route::post('mesure', [PatientActionsController::class, 'storeMesure'])->name('mesure.store');
+
+    // Rappels / Messages
+    Route::post('rappel', [PatientActionsController::class, 'storeRappel'])->name('rappel.store');
+});
+
+Route::resource('rappels', RappelController::class);
+Route::resource('messages', MessageController::class);
+Route::resource('campagnes', CampagneController::class);
+Route::resource('statistiques', StatistiqueController::class);
+Route::get('add-patient', function () {
+    return view('patients.add-patient');
+});
+Route::get('company', function () {
+    return view('settings.company');
+});
 
 Route::get('view-profile', function () {
     return view('users.profile');
