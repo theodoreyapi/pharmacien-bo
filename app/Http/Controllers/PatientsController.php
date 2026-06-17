@@ -308,6 +308,9 @@ class PatientsController extends Controller
         // Toutes pathologies dispo pour le formulaire ajout
         $allPathologies = DB::table('pathologies')->orderBy('code')->get();
 
+        // Tous les médicaments
+        $medicaments = DB::table('medicaments')->orderBy('name')->get();
+
         return view('patients.view-patient', compact(
             'patient',
             'pathologies',
@@ -317,7 +320,8 @@ class PatientsController extends Controller
             'messages',
             'networkLogs',
             'pharmaciesLiees',
-            'allPathologies'
+            'allPathologies',
+            'medicaments',
         ));
     }
 
@@ -486,10 +490,22 @@ class PatientsController extends Controller
 
         // Recherche du patient actif possédant ce numéro CMU/QR pour la pharmacie actuelle
         $patient = Patient::where('active', 'ACTIVE')
-            ->where('qr_code', $qrCode )
+            ->where('qr_code', $qrCode)
             ->first();
 
         if ($patient) {
+
+            $pharmacyId = Auth::guard('pharmacien')->user()->pharmacy_id;
+
+            // Le patient refuse le partage réseau
+            // et il n'appartient pas à la pharmacie connectée
+            if (!$patient->consent_reseau && $patient->pharmacy_id != $pharmacyId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Ce patient n'a pas autorisé le partage de ses données avec les autres pharmacies du réseau."
+                ]);
+            }
+
             return response()->json([
                 'success' => true,
                 // Génération dynamique de l'URL cible vers le profil

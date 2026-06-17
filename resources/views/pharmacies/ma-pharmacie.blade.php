@@ -403,20 +403,20 @@
                     <div class="info-item-label">
                         <iconify-icon icon="ph:phone-bold"></iconify-icon> Téléphone
                     </div>
-                    <div class="info-item-value">{{ $pharmacy->phone_number ?? '+225 27 22 44 56 78' }}</div>
+                    <div class="info-item-value">{{ $pharmacy->phone_number ?? '' }}</div>
                 </div>
                 <div>
                     <div class="info-item-label">
                         <iconify-icon icon="ph:envelope-bold"></iconify-icon> Email
                     </div>
-                    <div class="info-item-value">{{ $pharmacy->email ?? 'contact@pharmacie-plateau.ci' }}</div>
+                    <div class="info-item-value">{{ $pharmacy->email ?? '' }}</div>
                 </div>
                 <div>
                     <div class="info-item-label">
                         <iconify-icon icon="ph:map-pin-bold"></iconify-icon> Adresse
                     </div>
                     <div class="info-item-value">
-                        {{ $pharmacy->address ?? '12 Avenue Terrasson de Fougères, Plateau, Abidjan' }}</div>
+                        {{ $pharmacy->address ?? '' }}</div>
                 </div>
                 <div>
                     <div class="info-item-label">
@@ -427,7 +427,7 @@
             </div>
         </div>
 
-        {{-- ══ Abonnement ══ --}}
+        {{-- ══ Section Abonnement ══ --}}
         <div class="p-card">
             <div class="section-head mb-3">
                 <div class="section-title">
@@ -436,70 +436,321 @@
                 </div>
             </div>
 
-            {{-- Plan card --}}
-            <div class="plan-card">
-                <div>
-                    <div class="plan-label">Plan actuel</div>
-                    <div class="plan-name">Plan Pro</div>
-                    <div class="plan-renew">Renouvellement: 15 janv. 2027</div>
+            @if (!$abonnement && $estEnPeriodeEssai)
+                {{-- ─── ÉTAT 1 : BANDEAU ESSAI GRATUIT ─── --}}
+                <div class="essai-banner mb-4"
+                    style="background: #0061ff; color: white; padding: 20px; border-radius: 12px; position: relative;">
+                    <div style="font-size: 13px; opacity: 0.9;">Période d'essai</div>
+                    <div style="font-size: 24px; font-weight: 700; margin: 4px 0;">Essai — 1 an gratuit</div>
+                    <div style="font-size: 13px; opacity: 0.9;">Essai jusqu'au
+                        {{ \Carbon\Carbon::parse($finEssai)->format('d juin Y') }} · {{ $joursRestantsEssai }} jours
+                        restants</div>
+                    {{-- <button type="button" class="btn-close-essai"
+                        style="position: absolute; right: 20px; top: 20px; background: rgba(255,255,255,0.2); border: 1px solid white; color: white; border-radius: 6px; padding: 4px 12px; font-size: 12px;">Fermer</button> --}}
                 </div>
-                <div>
-                    <div class="plan-price-label">Mensuel</div>
-                    <div class="plan-price">45 000 XOF</div>
+                <br>
+                {{-- GRILLE DES OFFRES DE SOUSCRIPTION --}}
+                {{-- <form action="{{ url('abonnement/payer-wave') }}" method="POST">
+                    @csrf --}}
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="plan-selector-box p-3 d-block border rounded text-center" style="cursor:pointer;">
+                            <input type="radio" name="plan_type" value="ESSENTIEL" class="d-none">
+                            <div class="fw-bold text-dark">Essentiel</div>
+                            <div class="text-muted small">100 000 FCFA/an</div>
+                            <div class="small mt-2" style="color: #64748b;">300 patients · 3 agents</div>
+                        </label>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="plan-selector-box p-3 d-block border rounded text-center" style="cursor:pointer;">
+                            <input type="radio" name="plan_type" value="PRO" class="d-none">
+                            <div class="fw-bold text-dark">Pro</div>
+                            <div class="text-muted small">150 000 FCFA/an</div>
+                            <div class="small mt-2" style="color: #64748b;">1 500 patients · 10 agents</div>
+                        </label>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="plan-selector-box p-3 d-block border border-success rounded text-center bg-light"
+                            style="cursor:pointer; border-width: 2px !important;">
+                            <input type="radio" name="plan_type" value="EXPERT" checked class="d-none">
+                            <div class="fw-bold text-dark">Expert</div>
+                            <div class="text-success small fw-bold">200 000 FCFA/an</div>
+                            <div class="small mt-2" style="color: #64748b;">5 000 patients · 20 agents</div>
+                        </label>
+                    </div>
                 </div>
-            </div>
 
-            {{-- Usage stats --}}
-            <div class="usage-grid">
-                <div class="usage-item">
-                    <div class="usage-head">
-                        <span class="usage-label">Patients max</span>
-                        <iconify-icon icon="ph:check-circle-bold" class="usage-check"></iconify-icon>
-                    </div>
-                    <div class="usage-values">148 <span>/ 500</span></div>
-                    <div class="usage-bar">
-                        <div class="usage-fill" style="width:{{ (148 / 500) * 100 }}%;"></div>
-                    </div>
-                </div>
-                <div class="usage-item">
-                    <div class="usage-head">
-                        <span class="usage-label">Messages/mois</span>
-                        <iconify-icon icon="ph:check-circle-bold" class="usage-check"></iconify-icon>
-                    </div>
-                    <div class="usage-values">214 <span>/ 2000</span></div>
-                    <div class="usage-bar">
-                        <div class="usage-fill" style="width:{{ (214 / 2000) * 100 }}%;"></div>
-                    </div>
-                </div>
-                <div class="usage-item">
-                    <div class="usage-head">
-                        <span class="usage-label">Campagnes actives</span>
-                        <iconify-icon icon="ph:check-circle-bold" class="usage-check"></iconify-icon>
-                    </div>
-                    <div class="usage-values">1 <span>/ 5</span></div>
-                    <div class="usage-bar">
-                        <div class="usage-fill" style="width:{{ (1 / 5) * 100 }}%;"></div>
-                    </div>
-                </div>
-                <div class="usage-item">
-                    <div class="usage-head">
-                        <span class="usage-label">Membres équipe</span>
-                        <iconify-icon icon="ph:check-circle-bold" class="usage-check"></iconify-icon>
-                    </div>
-                    <div class="usage-values">4 <span>/ 10</span></div>
-                    <div class="usage-bar">
-                        <div class="usage-fill" style="width:{{ (4 / 10) * 100 }}%;"></div>
-                    </div>
-                </div>
-            </div>
+                {{-- FORMULAIRE DE PAIEMENT WAVE --}}
+                {{-- <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="field-lbl" style="font-size:12px; color:#64748b; font-weight:600;">Opérateur</div>
+                            <select class="f-input f-select" name="operator" disabled>
+                                <option value="wave">Wave</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="field-lbl" style="font-size:12px; color:#64748b; font-weight:600;">Numéro de
+                                téléphone</div>
+                            <input type="text" name="wave_phone" class="f-input" placeholder="0700000000" required>
+                        </div>
+                    </div> --}}
 
-            <button class="btn-gerer">
-                <iconify-icon icon="ph:credit-card-bold"></iconify-icon> Gérer l'abonnement
-            </button>
+                {{-- Erreur --}}
+                <div id="rechargeError" class="alert alert-danger py-10 px-16 radius-8 text-sm mb-16" style="display:none;">
+                </div>
+                <br>
+                <div class="text-end mb-4">
+                    <button type="button" class="btn btn-primary" id="rechargeBtn" onclick="lancerAbonnement()"
+                        style="background-color: #22c55e; border: none; font-weight: 600; border-radius: 10px;">
+                        Payer <span id="amount-placeholder">200 000</span> FCFA
+                    </button>
+                </div>
+                {{-- </form> --}}
+            @else
+                {{-- ─── ÉTAT 2 : ABONNEMENT ACTIF (IMAGE 2) ─── --}}
+                @php
+                    $maxPatients = $abonnement->max_patients ?? 5000;
+                    $maxMessages = $abonnement->max_messages_per_month ?? 3000;
+                    $maxCampaigns = $abonnement->max_campaigns ?? 20;
+                    $maxTeam = $abonnement->max_team_members ?? 20;
+                @endphp
+
+                <div class="active-subscription-banner mb-4"
+                    style="background: #16a34a; color: white; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 12px; opacity: 0.9;">Abonnement actif</div>
+                        <div style="font-size: 26px; font-weight: 800; margin: 2px 0;">
+                            {{ $abonnement->plan_name ?? 'Expert' }}</div>
+                        <div style="font-size: 13px; opacity: 0.9;">Expire le
+                            {{ \Carbon\Carbon::parse($abonnement->renewal_date)->format('d juin Y') }}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 20px; font-weight: 700;">
+                            {{ number_format($abonnement->price ?? 200000, 0, '.', ' ') }} FCFA/an</div>
+                        <button class="btn btn-sm btn-outline-light mt-2"
+                            style="font-size: 11px; border-radius: 20px; padding: 2px 12px;">Renouveler / Changer</button>
+                    </div>
+                </div>
+
+                {{-- JUGES DE PROGRESSION / USAGE GRID --}}
+                <div class="usage-grid"
+                    style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 24px;">
+                    <div class="usage-item">
+                        <div class="d-flex justify-content-between mb-1" style="font-size: 13px; color: #475569;">
+                            <span>Patients</span>
+                            <span class="fw-bold">{{ $totalPatients }} <span style="color:#94a3b8; font-weight:normal;">/
+                                    {{ $maxPatients }}</span></span>
+                        </div>
+                        <div class="progress" style="height: 6px; background-color: #f1f5f9; border-radius: 10px;">
+                            <div class="progress-bar bg-success"
+                                style="width: {{ ($totalPatients / $maxPatients) * 100 }}%; border-radius: 10px;"></div>
+                        </div>
+                    </div>
+
+                    <div class="usage-item">
+                        <div class="d-flex justify-content-between mb-1" style="font-size: 13px; color: #475569;">
+                            <span>Messages/mois</span>
+                            <span class="fw-bold">{{ $totalMessagesCeMois }} <span
+                                    style="color:#94a3b8; font-weight:normal;">/ {{ $maxMessages }}</span></span>
+                        </div>
+                        <div class="progress" style="height: 6px; background-color: #f1f5f9; border-radius: 10px;">
+                            <div class="progress-bar bg-success"
+                                style="width: {{ ($totalMessagesCeMois / $maxMessages) * 100 }}%; border-radius: 10px;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="usage-item">
+                        <div class="d-flex justify-content-between mb-1" style="font-size: 13px; color: #475569;">
+                            <span>Campagnes/mois</span>
+                            <span class="fw-bold">{{ $totalCampagnesCeMois }} <span
+                                    style="color:#94a3b8; font-weight:normal;">/ {{ $maxCampaigns }}</span></span>
+                        </div>
+                        <div class="progress" style="height: 6px; background-color: #f1f5f9; border-radius: 10px;">
+                            <div class="progress-bar bg-success"
+                                style="width: {{ ($totalCampagnesCeMois / $maxCampaigns) * 100 }}%; border-radius: 10px;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="usage-item">
+                        <div class="d-flex justify-content-between mb-1" style="font-size: 13px; color: #475569;">
+                            <span>Membres équipe</span>
+                            <span class="fw-bold">{{ $totalEquipe }} <span style="color:#94a3b8; font-weight:normal;">/
+                                    {{ $maxTeam }}</span></span>
+                        </div>
+                        <div class="progress" style="height: 6px; background-color: #f1f5f9; border-radius: 10px;">
+                            <div class="progress-bar bg-success"
+                                style="width: {{ ($totalEquipe / $maxTeam) * 100 }}%; border-radius: 10px;"></div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            {{-- Bouton Support permanent en bas --}}
+            <div class="text-center mt-3">
+                <a href="https://wa.me/2250714565080" target="_blank" class="w-100 btn border text-secondary"
+                    style="border-radius: 10px; font-size: 14px; font-weight: 600; background: #fff;">
+                    <iconify-icon icon="ph:star-bold" style="vertical-align: middle; margin-right: 5px;"></iconify-icon>
+                    Contacter le support PharmaConsults
+                </a>
+            </div>
         </div>
 
+        <script>
+            // Variable globale pour stocker le plan sélectionné (Expert par défaut selon la maquette)
+            let currentPlan = "EXPERT";
+            let currentAmount = 200000;
+
+            document.addEventListener("DOMContentLoaded", function() {
+                // 1. Gestion du changement de plan au clic sur les cartes
+                document.querySelectorAll('.plan-selector-box').forEach(box => {
+                    box.addEventListener('click', function() {
+                        // Reset des styles sur toutes les cartes
+                        document.querySelectorAll('.plan-selector-box').forEach(b => {
+                            b.classList.remove('border-success', 'badge-plan');
+                            b.style.borderWidth = '1px';
+                        });
+
+                        // Activer la carte cliquée
+                        this.classList.add('border-success', 'badge-plan');
+                        this.style.borderWidth = '2px';
+
+                        // Récupérer la valeur du radio bouton interne
+                        const radioInput = this.querySelector('input[name="plan_type"]');
+                        if (radioInput) {
+                            radioInput.checked = true;
+                            currentPlan = radioInput.value;
+                        }
+
+                        // Déterminer le montant selon le plan
+                        if (currentPlan === "ESSENTIEL") {
+                            currentAmount = 100000;
+                        } else if (currentPlan === "PRO") {
+                            currentAmount = 150000;
+                        } else {
+                            currentAmount = 200000; // EXPERT
+                        }
+
+                        // Mettre à jour l'affichage du prix dans le bouton de paiement
+                        const placeholder = document.getElementById('amount-placeholder');
+                        if (placeholder) {
+                            placeholder.innerText = currentAmount.toLocaleString(
+                                'fr-FR'); // Format propre avec espaces
+                        }
+                    });
+                });
+            });
+
+            // 2. Fonction asynchrone de soumission du paiement vers l'API Wave
+            async function lancerAbonnement() {
+                const btn = document.getElementById('rechargeBtn');
+                const errDiv = document.getElementById('rechargeError');
+
+                if (errDiv) {
+                    errDiv.style.display = 'none';
+                    errDiv.innerHTML = '';
+                }
+
+                // Validation de sécurité côté client
+                if (!currentAmount || currentAmount < 100000) {
+                    if (errDiv) {
+                        errDiv.textContent = 'Veuillez sélectionner un abonnement valide.';
+                        errDiv.style.display = 'block';
+                    }
+                    return;
+                }
+
+                // Changement d'état du bouton (Loading)
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Connexion à Wave...';
+
+                try {
+                    const response = await fetch('{{ url('abonnement/payer-wave') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        },
+                        body: JSON.stringify({
+                            plan_type: currentPlan, // ESSENTIEL, PRO, ou EXPERT
+                        }),
+                    });
+
+                    console.log(currentPlan);
+
+                    const data = await response.json();
+
+                    console.log(data);
+
+                    // Vérification du succès de l'API et présence de l'URL Wave
+                    if (response.ok && data.success && (data.abonnement_url)) {
+
+                        // Utilise la clé disponible renvoyée par votre contrôleur
+                        const waveUrl = data.abonnement_url;
+
+                        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Ouverture de Wave...';
+
+                        // Configuration et centrage de la fenêtre Popup
+                        const popupWidth = 500;
+                        const popupHeight = 700;
+                        const left = Math.round((window.screen.width - popupWidth) / 2);
+                        const top = Math.round((window.screen.height - popupHeight) / 2);
+
+                        const popup = window.open(
+                            waveUrl,
+                            'WavePayment',
+                            `width=${popupWidth},height=${popupHeight},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes,resizable=no`
+                        );
+
+                        // Anti-Popup Blocker : Si le navigateur bloque la fenêtre, on ouvre dans un nouvel onglet standard
+                        if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+                            window.open(waveUrl, '_blank');
+                        }
+
+                        // Surveillance en temps réel de la fermeture de la fenêtre de paiement
+                        const checkClosed = setInterval(() => {
+                            if (popup && popup.closed) {
+                                clearInterval(checkClosed);
+                                window.location.reload(); // Rafraîchit l'application pour activer le nouveau plan
+                            }
+                        }, 1000);
+
+                        // Remise à l'état initial du bouton au cas où
+                        btn.disabled = false;
+                        btn.innerHTML = `Payer ${currentAmount.toLocaleString('fr-FR')} FCFA`;
+
+                    } else {
+                        // Gestion et affichage des erreurs renvoyées par le serveur
+                        if (errDiv) {
+                            const msg = Array.isArray(data.message) ?
+                                data.message.join('<br>') :
+                                (data.message ?? 'Une erreur est survenue lors de l\'initialisation.');
+                            errDiv.innerHTML = msg;
+                            errDiv.style.display = 'block';
+                        }
+                        resetPayButton(btn);
+                    }
+                } catch (err) {
+                    console.log(err);
+                    // Erreur réseau ou plantage JS script
+                    if (errDiv) {
+                        errDiv.textContent = 'Erreur réseau ou connexion impossible. Veuillez réessayer.';
+                        errDiv.style.display = 'block';
+                    }
+                    resetPayButton(btn);
+                }
+            }
+
+            // Fonction outil pour réinitialiser le texte du bouton en cas d'échec
+            function resetPayButton(btn) {
+                btn.disabled = false;
+                btn.innerHTML = `Payer <span id="amount-placeholder">${currentAmount.toLocaleString('fr-FR')}</span> FCFA`;
+            }
+        </script>
+
         {{-- ══ Réseau affilié ══ --}}
-        <div class="p-card">
+        {{-- <div class="p-card">
             <div class="section-head mb-2">
                 <div class="section-title">
                     <iconify-icon icon="ph:users-three-bold" style="color:#2563eb;"></iconify-icon>
@@ -534,7 +785,7 @@
             <button class="btn-gerer mt-3">
                 <iconify-icon icon="ph:chat-circle-dots-bold"></iconify-icon> Gérer les affiliations
             </button>
-        </div>
+        </div> --}}
 
     </div>
 

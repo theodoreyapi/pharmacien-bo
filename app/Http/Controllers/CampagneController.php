@@ -16,7 +16,9 @@ class CampagneController extends Controller
         if (!Auth::guard('pharmacien')->check()) {
             return redirect()->route('logout');
         }
-        
+
+        $pharmacyId = session('pharmacy_id');
+
         $campagnes = DB::table('campagnes')
             ->leftJoin('pathologies', 'pathologies.id_pathologie', '=', 'campagnes.pathologie_id')
             ->select(
@@ -24,18 +26,22 @@ class CampagneController extends Controller
                 'pathologies.code as pathologie_code',
                 'pathologies.name as pathologie_name'
             )
+            ->where('campagnes.pharmacy_id', $pharmacyId)
             ->latest('campagnes.created_at')
             ->get();
 
         $enCours = DB::table('campagnes')
+            ->where('campagnes.pharmacy_id', $pharmacyId)
             ->where('status', 'EN_COURS')
             ->count();
 
         $planifiees = DB::table('campagnes')
+            ->where('campagnes.pharmacy_id', $pharmacyId)
             ->where('status', 'PLANIFIE')
             ->count();
 
         $patientsCibles = DB::table('campagnes')
+            ->where('campagnes.pharmacy_id', $pharmacyId)
             ->sum('patients_count');
 
         $pathologies = DB::table('pathologies')->get();
@@ -67,7 +73,7 @@ class CampagneController extends Controller
             'name' => $request->name,
             'description' => $request->description,
             'status' => 'PLANIFIE',
-            'portee' => $request->portee,
+            'portee' => 'MA_PHARMACIE',
             'message_template' => $request->message_template,
             'scheduled_at' => $request->scheduled_at,
             'pathologie_id' => $request->pathologie_id,

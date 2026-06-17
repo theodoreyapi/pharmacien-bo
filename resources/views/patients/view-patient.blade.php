@@ -1630,7 +1630,7 @@
                         Glycémie{{ $glyc ? ' · ' . \Carbon\Carbon::parse($glyc->created_at)->translatedFormat('j M.') : '' }}{{ $glyc?->is_fasting ? ' · À jeun' : '' }}
                     </div>
                     @if ($glyc)
-                        <div class="mesure-value">{{ $glyc->glycemia_mmol }} <span class="mesure-unit">mmol/L</span>
+                        <div class="mesure-value">{{ $glyc->glycemia_mmol }} <span class="mesure-unit">g/L</span>
                         </div>
                         <span class="mesure-status"
                             style="background:#fff7ed;color:#d97706;">{{ $glyc->status_label ?? 'Élevé' }}</span>
@@ -1845,9 +1845,9 @@
         {{-- ════════ TAB : TRAITEMENTS ════════ --}}
         <div id="tab-traitements" style="display:none;">
             <div class="d-flex align-items-center justify-content-between mb-3">
-                <span
-                    style="font-size:13px;font-weight:600;color:#64748b;">{{ $traitements->where('status', 'ACTIF')->count() }}
-                    traitement(s) actif(s)</span>
+                <span style="font-size:13px;font-weight:600;color:#64748b;">
+                    {{ $traitements->where('status', 'ACTIF')->count() }} traitement(s) actif(s)
+                </span>
                 <button class="btn-add-sm" id="btn-add-trait" onclick="togglePanel('add-trait-panel')">
                     <iconify-icon icon="ph:plus-bold"></iconify-icon> Ajouter traitement
                 </button>
@@ -1857,49 +1857,66 @@
                 <form action="{{ route('patients.traitement.store', $patient->id_patient) }}" method="POST">
                     @csrf
                     <div style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:14px;">Nouveau traitement</div>
+
                     <div class="mb-3">
                         <div class="field-lbl">Médicament</div>
-                        <input type="text" name="medication_name" class="f-input"
-                            placeholder="Rechercher un médicament...">
+                        <select name="medicament_id" id="select-medicament" class="f-input f-select" required>
+                            <option value="">-- Sélectionner ou rechercher un médicament --</option>
+                            @foreach ($medicaments as $med)
+                                <option value="{{ $med->id_medicament }}">{{ $med->name }}
+                                    {{ $med->code_cip ? '(' . $med->code_cip . ')' : '' }}</option>
+                            @endforeach
+                        </select>
                     </div>
+
                     <div class="form-row">
                         <div>
-                            <div class="field-lbl">Dosage</div><input type="text" name="dosage" class="f-input"
-                                placeholder="Ex: 5 mg/j">
+                            <div class="field-lbl">Qté par prise</div>
+                            <input type="number" name="dose_per_take" class="f-input" placeholder="Ex: 1 ou 2"
+                                min="1" value="1" required>
                         </div>
                         <div>
-                            <div class="field-lbl">Fréquence/jour</div><input type="number" name="frequency_per_day"
-                                class="f-input" placeholder="1">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div>
-                            <div class="field-lbl">Quantité délivrée</div><input type="number" name="quantity_delivered"
-                                class="f-input" placeholder="30">
-                        </div>
-                        <div>
-                            <div class="field-lbl">Durée (jours)</div><input type="number" name="duration_days"
-                                class="f-input" placeholder="30">
+                            <div class="field-lbl">Fréquence/jour</div>
+                            <input type="number" name="frequency_per_day" class="f-input" placeholder="1"
+                                min="1" value="1" required>
                         </div>
                     </div>
+
                     <div class="form-row">
                         <div>
-                            <div class="field-lbl">Date dispensation</div><input type="date" name="dispensed_at"
-                                class="f-input" value="{{ date('Y-m-d') }}">
+                            <div class="field-lbl">Quantité délivrée</div>
+                            <input type="number" name="quantity_delivered" class="f-input" placeholder="30"
+                                min="1" value="30" required>
+                        </div>
+                        <div>
+                            <div class="field-lbl">Durée (jours)</div>
+                            <input type="number" name="duration_days" class="f-input" placeholder="30" min="1"
+                                value="30" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div>
+                            <div class="field-lbl">Date dispensation</div>
+                            <input type="date" name="dispensed_at" class="f-input" value="{{ date('Y-m-d') }}"
+                                required>
                         </div>
                         <div>
                             <div class="field-lbl">Lien pathologie</div>
                             <select name="pathologie_id" class="f-input f-select">
+                                <option value="">Aucun lien</option>
                                 @foreach ($pathologies as $pp)
                                     <option value="{{ $pp->pathologie_id }}">{{ $pp->name }}</option>
                                 @endforeach
                             </select>
                         </div>
                     </div>
+
                     <div class="fin-estimee">
                         <iconify-icon icon="ph:calendar-bold"></iconify-icon>
                         La date de fin estimée sera calculée automatiquement après enregistrement
                     </div>
+
                     <div class="panel-btns">
                         <button type="button" class="btn-annuler"
                             onclick="togglePanel('add-trait-panel')">Annuler</button>
@@ -1935,13 +1952,15 @@
                                     style="display:inline-flex;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:800;background:{{ $tBg }};color:{{ $tColor }};margin-left:6px;">{{ $t->patho_code }}</span>
                             @endif
                         </div>
-                        <div class="trait-meta">{{ $t->dosage }} · {{ $t->frequency_per_day }}x/jour</div>
+                        <div class="trait-meta">
+                            {{ $t->dose_per_take }} unité(s) par prise · {{ $t->frequency_per_day }}x/jour
+                        </div>
                         <div class="trait-meta">
                             Délivré : {{ \Carbon\Carbon::parse($t->dispensed_at)->format('d/m/Y') }}
                             @if ($t->estimated_end_date)
                                 · Fin estimée : {{ \Carbon\Carbon::parse($t->estimated_end_date)->format('d/m/Y') }}
                             @endif
-                            @if ($t->days_late > 0)
+                            @if (isset($t->days_late) && $t->days_late > 0)
                                 <span class="trait-retard ms-2">{{ $t->days_late }} jours de retard</span>
                             @endif
                         </div>
@@ -1949,7 +1968,7 @@
                     <form
                         action="{{ route('patients.traitement.renouveler', [$patient->id_patient, $t->id_traitement]) }}"
                         method="POST"
-                        onsubmit="return confirm('Renouveler {{ $t->medication_name }} pour {{ $ancien->duration_days ?? 30 }} jours ?')">
+                        onsubmit="return confirm('Renouveler {{ $t->medication_name }} pour {{ $t->duration_days ?? 30 }} jours ?')">
                         @csrf
                         <button type="submit" class="btn-renouveler">
                             <iconify-icon icon="ph:arrows-counter-clockwise-bold"></iconify-icon> Renouveler
@@ -1960,6 +1979,25 @@
                 <div style="text-align:center;padding:24px;color:#94a3b8;font-size:13px;">Aucun traitement enregistré</div>
             @endforelse
         </div>
+
+        <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css"
+            rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                // Transforme le select en barre de recherche ultra-rapide
+                new TomSelect("#select-medicament", {
+                    create: false,
+                    sortField: {
+                        field: "text",
+                        direction: "asc"
+                    },
+                    placeholder: "Tapez le nom du médicament ou le CIP...",
+                    allowEmptyOption: false
+                });
+            });
+        </script>
 
         {{-- ════════ TAB : MESURES ════════ --}}
         <div id="tab-mesures" style="display:none;">
@@ -2064,15 +2102,15 @@
                     <div id="mfields-glyc" style="display:none;">
                         <div class="info-bar amber">
                             <iconify-icon icon="ph:info-bold"></iconify-icon>
-                            Mesure obligatoirement à jeun · Normale : &lt; 6,1 mmol/L
+                            Mesure obligatoirement à jeun · Normale : &lt; 6,1 g/L
                         </div>
                         @if ($glyc)
                             <div class="last-mesure">
-                                Dernière mesure : {{ $glyc->glycemia_mmol }} mmol/L —
+                                Dernière mesure : {{ $glyc->glycemia_mmol }} g/L —
                                 {{ \Carbon\Carbon::parse($glyc->created_at)->format('d/m/Y') }}
                             </div>
                         @endif
-                        <div class="field-lbl">Glycémie à jeun (mmol/L)</div>
+                        <div class="field-lbl">Glycémie à jeun (g/L)</div>
                         <input type="number" step="0.1" name="glycemia_mmol" id="f-glycemia" class="big-input"
                             placeholder="5.5" min="1" max="50" readonly>
                         <div class="context-bar">
@@ -2183,14 +2221,15 @@
                         $mVal = match ($m->type) {
                             'PRESSION_ARTERIELLE' => $m->systolic . '/' . $m->diastolic . ' mmHg',
                             'FREQUENCE_CARDIAQUE' => $m->heart_rate_bpm . ' bpm',
-                            'GLYCEMIE' => $m->glycemia_mmol . ' mmol/L' . ($m->is_fasting ? ' (à jeun)' : ''),
+                            'GLYCEMIE' => $m->glycemia_mmol . ' g/L' . ($m->is_fasting ? ' (à jeun)' : ''),
                             'POIDS_IMC' => $m->weight_kg . ' kg' . ($m->imc ? ' · IMC ' . $m->imc : ''),
                             default => '—',
                         };
                     @endphp
                     <div class="histo-row">
                         <div class="d-flex align-items-center gap-3">
-                            <span class="histo-badge" style="background:{{ $mBg }};color:{{ $mCol }};">
+                            <span class="histo-badge"
+                                style="background:{{ $mBg }};color:{{ $mCol }};">
                                 <iconify-icon icon="{{ $mIcon }}"
                                     style="font-size:.85rem;margin-right:3px;"></iconify-icon>{{ $mLbl }}
                             </span>
@@ -2454,9 +2493,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script>
         /* ═══════════════════════════════════════════════════
-       SCRIPT UNIFIÉ — view-patient-dynamic.blade.php
-       Remplace TOUS les blocs <script> existants dans la vue
-    ═══════════════════════════════════════════════════ */
+                   SCRIPT UNIFIÉ — view-patient-dynamic.blade.php
+                   Remplace TOUS les blocs <script> existants dans la vue
+                ═══════════════════════════════════════════════════ */
 
         /* ── 1. TABS ── */
         const TABS = ['generale', 'pathologies', 'traitements', 'mesures', 'messages', 'reseau'];
@@ -2798,7 +2837,7 @@
         }
 
         /* ── 9. INITIALISATION AU CHARGEMENT ── */
-       document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function() {
 
             // Passer les champs non-PA en lecture seule au chargement
             ['f-heart-rate', 'f-comment-fc', 'f-glycemia', 'f-weight', 'f-height'].forEach(id => {

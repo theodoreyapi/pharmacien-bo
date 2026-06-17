@@ -62,11 +62,18 @@ class DashboardController extends Controller
             ->count();
 
         // Mesures aujourd'hui
+        // $mesuresAujourdhui = DB::table('mesures as m')
+        //     ->join('patients as p', 'p.id_patient', '=', 'm.patient_id')
+        //     ->where('p.pharmacy_id', $pharmacyId)
+        //     ->whereDate('m.created_at', $today)
+        //     ->count();
+
         $mesuresAujourdhui = DB::table('mesures as m')
             ->join('patients as p', 'p.id_patient', '=', 'm.patient_id')
             ->where('p.pharmacy_id', $pharmacyId)
             ->whereDate('m.created_at', $today)
-            ->count();
+            ->distinct('m.patient_id')
+            ->count('m.patient_id');
 
         /* ══════════════════════════════════════
            PATIENTS À RELANCER (liste)

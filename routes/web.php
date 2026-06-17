@@ -31,10 +31,17 @@ use Illuminate\Support\Facades\Route;
 Route::post('custom-login', [CustomAuthController::class, 'customLogin']);
 Route::get('logout', [CustomAuthController::class, 'signOut'])->name('logout');
 
+// Rechargement
 Route::get('/payment/wave/success/{id}', [PaymentWaveController::class, 'success'])
     ->name('wave.success');
 Route::get('/payment/wave/error/{id}', [PaymentWaveController::class, 'error'])
     ->name('wave.error');
+
+    // Abonnement
+Route::get('/abonnement/wave/success/{id}', [PaymentWaveController::class, 'Abonsuccess'])
+    ->name('abonnement.wave.success');
+Route::get('/abonnement/wave/error/{id}', [PaymentWaveController::class, 'Abonerror'])
+    ->name('abonnement.wave.error');
 
 Route::get('/', function () {
     if (Auth::guard('pharmacien')->check()) {
@@ -72,6 +79,7 @@ Route::resource('reviews', ReviewController::class);
 // Ma pharmacie
 Route::get('ma-pharmacie', [PharmacyProfileController::class, 'index'])->name('pharmacie.profil');
 Route::post('ma-pharmacie/update', [PharmacyProfileController::class, 'update'])->name('pharmacie.update');
+Route::post('abonnement/payer-wave', [PharmacyProfileController::class, 'checkoutWave']);
 
 //{{ url()->previous() }}
 // pharmacie

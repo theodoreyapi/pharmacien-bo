@@ -592,14 +592,14 @@
                                 onclick="setPortee(this, 'MA_PHARMACIE', 'Ma pharmacie', 45)">
                                 <iconify-icon icon="ph:building-bold"></iconify-icon> Ma pharmacie
                             </button>
-                            <button type="button" class="portee-btn"
+                            {{-- <button type="button" class="portee-btn"
                                 onclick="setPortee(this, 'REGIONAL', 'Régional', 125)">
                                 <iconify-icon icon="ph:map-pin-bold"></iconify-icon> Régional
                             </button>
                             <button type="button" class="portee-btn"
                                 onclick="setPortee(this, 'NATIONAL', 'National', 312)">
                                 <iconify-icon icon="ph:globe-bold"></iconify-icon> National
-                            </button>
+                            </button> --}}
                         </div>
                     </div>
                 </div>
@@ -631,7 +631,7 @@
                 </div>
 
                 <div class="panel-footer">
-                    <button class="btn-annuler" onclick="toggleCreatePanel()">Annuler</button>
+                    <button type="button" class="btn-annuler" onclick="toggleCreatePanel()">Annuler</button>
                     {{-- <button class="btn-apercu">
                         <iconify-icon icon="ph:eye-bold"></iconify-icon> Aperçu
                     </button> --}}

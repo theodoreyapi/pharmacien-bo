@@ -10,10 +10,10 @@
 
         <div class="d-flex align-items-center gap-3">
 
-            <button type="button" class="btn p-0 d-flex justify-content-center align-items-center"
+            {{-- <button type="button" class="btn p-0 d-flex justify-content-center align-items-center"
                 style="width: 40px; height: 40px; background-color: transparent; border: none; color: #64748b;">
                 <iconify-icon icon="solar:qr-code-outline" style="font-size: 1.4rem;"></iconify-icon>
-            </button>
+            </button> --}}
 
             <div class="dropdown">
                 <button class="position-relative p-0 d-flex justify-content-center align-items-center" type="button"
@@ -23,7 +23,7 @@
                     <span
                         class="position-absolute top-2 start-65 translate-middle badge rounded-circle bg-danger d-flex align-items-center justify-content-center text-white"
                         style="font-size: 0.65rem; min-width: 16px; height: 16px; padding: 0;">
-                        9
+                        0
                     </span>
                 </button>
 

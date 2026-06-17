@@ -108,6 +108,9 @@ class PatientActionsController extends Controller
                 ->withInput();
         }
 
+        // Récupérer l
+        $pathologie = DB::table('pathologies')->where('id_pathologie', $request->pathologie_id)->first();
+
         DB::table('patient_pathologies')->insert([
             'patient_id'    => $patientId,
             'pathologie_id' => $request->pathologie_id,
@@ -121,7 +124,7 @@ class PatientActionsController extends Controller
         ]);
 
         // Log réseau
-        $this->logNetwork($patientId, 'Pathologie ajoutée');
+        $this->logNetwork($patientId, 'Pathologie ' . $pathologie->name . ' ajoutée');
 
         return redirect()
             ->route('patients.show', $patientId)
@@ -136,9 +139,9 @@ class PatientActionsController extends Controller
     public function storeTraitement(Request $request, int $patientId)
     {
         $request->validate([
-            'medication_name'    => 'required|string|max:200',
-            'dosage'             => 'nullable|string|max:100',
+            'medicament_id'      => 'required|exists:medicaments,id_medicament',
             'frequency_per_day'  => 'required|integer|min:1|max:10',
+            'dose_per_take'      => 'required|integer|min:1', // Nouvelle validation
             'quantity_delivered' => 'required|integer|min:1',
             'duration_days'      => 'required|integer|min:1',
             'dispensed_at'       => 'required|date',
@@ -147,16 +150,19 @@ class PatientActionsController extends Controller
 
         $this->authorizePatient($patientId);
 
+        // Récupérer le nom du médicament pour l'historique
+        $medicament = DB::table('medicaments')->where('id_medicament', $request->medicament_id)->first();
+
         $durationDays = (int) $request->duration_days;
         $dispensedAt     = Carbon::parse($request->dispensed_at);
         $estimatedEndDate = $dispensedAt->copy()->addDays($durationDays);
-        // Rappel 5 jours avant la fin
-        $reminderDate    = $estimatedEndDate->copy()->subDays(5);
+        // $reminderDate    = $estimatedEndDate->copy()->subDays(5);
 
-        $traitementId = DB::table('traitements')->insertGetId([
-            'medication_name'    => $request->medication_name,
-            'dosage'             => $request->dosage,
+        DB::table('traitements')->insertGetId([
+            'medicament_id'      => $request->medicament_id,
+            'medication_name'    => $medicament->name, // Stockage du nom au moment de l'action
             'frequency_per_day'  => $request->frequency_per_day,
+            'dose_per_take'      => $request->dose_per_take, // Nouveau champ
             'quantity_delivered' => $request->quantity_delivered,
             'duration_days'      => $durationDays,
             'dispensed_at'       => $dispensedAt->toDateString(),
@@ -169,15 +175,12 @@ class PatientActionsController extends Controller
             'updated_at'         => now(),
         ]);
 
-        // Mise à jour statut patient
         $this->refreshPatientStatus($patientId);
-
-        // Log réseau
-        $this->logNetwork($patientId, 'Traitement ajouté');
+        $this->logNetwork($patientId, 'Traitement ' . $medicament->name . ' ajouté');
 
         return redirect()
             ->route('patients.show', $patientId)
-            ->with('success', "Traitement ajouté. Fin estimée : {$estimatedEndDate->format('d/m/Y')}. Rappel prévu : {$reminderDate->format('d/m/Y')}.")
+            ->with('success', "Traitement ajouté. Fin estimée : {$estimatedEndDate->format('d/m/Y')}.")
             ->withFragment('tab-traitements');
     }
 
@@ -202,9 +205,10 @@ class PatientActionsController extends Controller
         $dispensedAt      = Carbon::today();
         $estimatedEndDate = $dispensedAt->copy()->addDays($ancien->duration_days);
 
-        $nouveauId = DB::table('traitements')->insertGetId([
+        DB::table('traitements')->insertGetId([
+            'medicament_id'      => $ancien->medicament_id,
             'medication_name'    => $ancien->medication_name,
-            'dosage'             => $ancien->dosage,
+            'dose_per_take'      => $ancien->dose_per_take,
             'frequency_per_day'  => $ancien->frequency_per_day,
             'quantity_delivered' => $ancien->quantity_delivered,
             'duration_days'      => $ancien->duration_days,
@@ -222,7 +226,7 @@ class PatientActionsController extends Controller
         $this->refreshPatientStatus($patientId);
 
         // Log réseau
-        $this->logNetwork($patientId, 'Traitement renouvelé');
+        $this->logNetwork($patientId, 'Traitement ' . $ancien->medicament_name . ' renouvelé');
 
         return redirect()
             ->route('patients.show', $patientId)
@@ -323,9 +327,20 @@ class PatientActionsController extends Controller
             DB::table('mesures')->insert($mesure);
         }
 
+        $labels = [
+            'PRESSION_ARTERIELLE' => 'Pression artérielle',
+            'FREQUENCE_CARDIAQUE' => 'Fréquence cardiaque',
+            'GLYCEMIE'            => 'Glycémie',
+            'POIDS_IMC'           => 'Poids & IMC',
+        ];
+
+        $typesMesures = array_map(function ($mesure) use ($labels) {
+            return $labels[$mesure['type']] ?? $mesure['type'];
+        }, $mesuresToInsert);
+
         // Recalcule le statut observance & Logs
         $this->refreshPatientStatus($patientId);
-        $this->logNetwork($patientId, count($mesuresToInsert) . ' mesure(s) clinique(s) ajoutée(s).');
+        $this->logNetwork($patientId, count($mesuresToInsert) . ' mesure(s) ajoutée(s) : ' . implode(', ', $typesMesures));
 
         return redirect()
             ->route('patients.show', $patientId)

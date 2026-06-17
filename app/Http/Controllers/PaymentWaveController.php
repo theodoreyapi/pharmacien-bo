@@ -157,4 +157,75 @@ class PaymentWaveController extends Controller
             'rechargement_id' => $id,
         ]);
     }
+
+    /**
+     * ✅ PAGE SUCCESS
+     */
+    public function Abonsuccess($id)
+    {
+
+        // ✅ Récupère l'objet complet, puis accède à l'attribut
+        $payment = DB::table('abonnements')->where('id_abonnement', $id)->first();
+
+        if (!$payment) {
+            return view('payment.abonerror', ['message' => 'Abonnement introuvable']);
+        }
+
+        $checkoutId = $payment->checkout_session_id; // ✅ string correcte
+
+        // Vérification réelle chez Wave (source de vérité)
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer wave_ci_prod_tIc5B0OlAxjucp29W83a2YLvua7Z7FOTmAFYtQlONucpqcNHU0TklALECuBP-nf5HL8HkGgopw0UzPFz2aXld43qhMcAwXINng',
+            'Content-Type'  => 'application/json',
+        ])->get("https://api.wave.com/v1/checkout/sessions/$checkoutId");
+
+        if (!$response->successful()) {
+            return view('payment.abonerror', [
+                'message' => 'Impossible de vérifier l\'abonnement',
+            ]);
+        }
+
+        $session = $response->json();
+
+        if ($session['payment_status'] !== 'succeeded') {
+            return view('payment.abonerror', [
+                'message' => 'Abonnement non confirmé',
+            ]);
+        }
+
+        // ── Traitement idempotent (eviter double crédit) ──────────────────
+        if ($payment->status !== 'success') {
+            DB::transaction(function () use ($payment, $session) {
+
+                // Mettre à jour l'abonnement
+                $payment->update([
+                    'status'         => 'ACTIF',
+                    'status_payment' => 'success',
+                    'start_date' => Carbon::today()->toDateString(),
+                    'renewal_date' => Carbon::today()->addYear()->toDateString(),
+                    'transaction_id' => $session['transaction_id'] ?? null,
+                    'updated_at'     => Carbon::now(),
+                ]);
+
+            });
+        }
+
+        return view('payment.abonsuccess', [
+            'amount'    => $session['amount'],
+            'reference' => $session['transaction_id'] ?? 'N/A',
+            'business'  => $session['business_name'] ?? 'PharmaConsults',
+        ]);
+    }
+
+    /**
+     * ❌ PAGE ERROR
+     */
+    public function Abonerror($id)
+    {
+        return view('payment.abonerror', [
+            'amount' => 0,
+            'message' => 'Abonnement annulé ou échoué',
+            'abonnement_id' => $id,
+        ]);
+    }
 }

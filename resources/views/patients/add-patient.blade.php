@@ -568,11 +568,21 @@
                             <iconify-icon icon="ph:check-bold" style="font-size:12px;"></iconify-icon>
                         </div>
                         <div>
+                            <div class="consent-title">J'accepte le partage entre pharmacies</div>
+                            <div class="consent-desc">Une pharmacie peut consulter le dossier en cas de besoin
+                            </div>
+                        </div>
+                    </div>
+                    {{-- <div class="consent-item" onclick="toggleConsent(this, 'consent_reseau')">
+                        <div class="consent-check">
+                            <iconify-icon icon="ph:check-bold" style="font-size:12px;"></iconify-icon>
+                        </div>
+                        <div>
                             <div class="consent-title">J'accepte le partage entre pharmacies affiliées</div>
                             <div class="consent-desc">Une pharmacie partenaire peut consulter le dossier en cas de besoin
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
                     <input type="hidden" name="consent_suivi" id="consent_suivi" value="0">
                     <input type="hidden" name="consent_whatsapp" id="consent_whatsapp" value="0">
                     <input type="hidden" name="consent_sms" id="consent_sms" value="0">
