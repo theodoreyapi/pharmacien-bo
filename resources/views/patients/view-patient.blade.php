@@ -1323,6 +1323,368 @@
                 align-self: flex-end;
             }
         }
+
+        /* ── RDV : Alert bar ── */
+        .rdv-alert {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            background: #fef2f2;
+            border: 1px solid #fee2e2;
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+        }
+
+        .rdv-alert-icon {
+            color: #dc2626;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .rdv-alert-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #dc2626;
+        }
+
+        .rdv-alert-sub {
+            font-size: 12px;
+            color: #b91c1c;
+            margin-top: 2px;
+        }
+
+        /* ── RDV : Planning card ── */
+        .planning-card {
+            border: 1.5px solid #d1fae5;
+            background: #f0fdf4;
+            border-radius: 16px;
+            padding: 16px 18px;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 10px;
+        }
+
+        .planning-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: white;
+            color: #16a34a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .planning-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .planning-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 20px;
+            background: #ecfdf5;
+            color: #16a34a;
+        }
+
+        .planning-meta {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 3px;
+        }
+
+        .planning-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .planning-tag {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .planning-rappel {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 8px;
+        }
+
+        .planning-note {
+            font-size: 11px;
+            color: #64748b;
+            font-style: italic;
+            margin-top: 2px;
+        }
+
+        .planning-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .planning-icon-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            color: #94a3b8;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .15s;
+        }
+
+        .planning-icon-btn:hover {
+            background: rgba(0, 0, 0, .05);
+        }
+
+        .planning-icon-btn.danger:hover {
+            color: #dc2626;
+            background: #fef2f2;
+        }
+
+        /* ── RDV : date box ── */
+        .rdv-date-box {
+            width: 44px;
+            text-align: center;
+            flex-shrink: 0;
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 6px 4px;
+        }
+
+        .rdv-date-box.sm {
+            width: 40px;
+            padding: 5px 4px;
+        }
+
+        .rdv-date-dow {
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            color: #94a3b8;
+        }
+
+        .rdv-date-day {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        /* ── RDV : upcoming item ── */
+        .rdv-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 0;
+            border-bottom: 1px solid #f8fafc;
+        }
+
+        .rdv-item:last-child {
+            border-bottom: none;
+        }
+
+        .rdv-item-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 6px;
+        }
+
+        .rdv-item-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .rdv-item-actions {
+            display: flex;
+            gap: 8px;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        .btn-effectue {
+            padding: 8px 16px;
+            border-radius: 10px;
+            border: none;
+            background: #16a34a;
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-family: 'DM Sans', sans-serif;
+            transition: background .15s;
+        }
+
+        .btn-effectue:hover {
+            background: #15803d;
+        }
+
+        .btn-absent {
+            padding: 8px 16px;
+            border-radius: 10px;
+            border: 1.5px solid #fecaca;
+            background: white;
+            color: #dc2626;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-family: 'DM Sans', sans-serif;
+            transition: background .15s;
+        }
+
+        .btn-absent:hover {
+            background: #fef2f2;
+        }
+
+        /* ── RDV : historique row ── */
+        .rdv-histo-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f8fafc;
+        }
+
+        .rdv-histo-row:last-child {
+            border-bottom: none;
+        }
+
+        .rdv-histo-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 3px;
+        }
+
+        .rdv-histo-status {
+            margin-left: auto;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 12px;
+            border-radius: 20px;
+            flex-shrink: 0;
+        }
+
+        .status-effectue {
+            background: #ecfdf5;
+            color: #16a34a;
+        }
+
+        .status-manque {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        /* ── RDV : Modal Nouveau planning ── */
+        .freq-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .freq-btn {
+            padding: 11px 8px;
+            border-radius: 12px;
+            border: 1.5px solid #e2e8f0;
+            background: white;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            transition: all .15s;
+        }
+
+        .freq-btn.active {
+            border-color: #16a34a;
+            background: #f0fdf4;
+            color: #16a34a;
+        }
+
+        .jour-grid {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .jour-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 1.5px solid #e2e8f0;
+            background: white;
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            transition: all .15s;
+        }
+
+        .jour-btn.active {
+            border-color: #16a34a;
+            background: #16a34a;
+            color: white;
+        }
+
+        .mesure-toggle-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .mesure-toggle-btn {
+            padding: 9px 16px;
+            border-radius: 20px;
+            border: 1.5px solid #e2e8f0;
+            background: white;
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'DM Sans', sans-serif;
+            transition: all .15s;
+        }
+
+        .mesure-toggle-btn.active {
+            border-color: #16a34a;
+            background: #16a34a;
+            color: white;
+        }
     </style>
 
     <div class="dash-body">
@@ -1527,6 +1889,7 @@
             <button class="tab-btn" onclick="switchTab('pathologies')">Pathologies</button>
             <button class="tab-btn" onclick="switchTab('traitements')">Traitements</button>
             <button class="tab-btn" onclick="switchTab('mesures')">Mesures</button>
+            <button class="tab-btn" onclick="switchTab('rdv')">RDV</button>
             <button class="tab-btn" onclick="switchTab('messages')">Messages</button>
             <button class="tab-btn" onclick="switchTab('reseau')">Réseau</button>
         </div>
@@ -2250,6 +2613,192 @@
             </div>
         </div>
 
+        {{-- ════════ TAB : RDV ════════ --}}
+        <div id="tab-rdv" style="display:none;">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <div style="font-size:1.1rem;font-weight:800;color:#0f172a;">Rendez-vous mesures</div>
+                    <div style="font-size:12px;color:#94a3b8;">Plannings récurrents et RDV ponctuels</div>
+                </div>
+                <button class="btn-add-sm" onclick="openPlanningModal()">
+                    <iconify-icon icon="ph:plus-bold"></iconify-icon> Nouveau planning
+                </button>
+            </div>
+
+            @php
+                $rdvManques = $historiqueRdv->where('status', 'MANQUE')->count();
+            @endphp
+            @if ($rdvManques > 0)
+                <div class="rdv-alert">
+                    <iconify-icon icon="ph:x-circle-bold" class="rdv-alert-icon"></iconify-icon>
+                    <div>
+                        <div class="rdv-alert-title">{{ $rdvManques }} RDV manqué{{ $rdvManques > 1 ? 's' : '' }}
+                            sans mesure effectuée</div>
+                        <div class="rdv-alert-sub">Pensez à recontacter ce patient pour reprogrammer.</div>
+                    </div>
+                </div>
+            @endif
+
+            {{-- Plannings récurrents --}}
+            <div class="content-card">
+                <div class="card-title mb-3">
+                    <iconify-icon icon="ph:arrows-clockwise-bold" style="color:#334155;"></iconify-icon>
+                    Plannings récurrents
+                </div>
+                @forelse($plannings as $pl)
+                    @php
+                        $plMesuresMap = [
+                            'PRESSION_ARTERIELLE' => ['Tension', 'ph:heart-bold', '#fce4ec', '#c2185b'],
+                            'FREQUENCE_CARDIAQUE' => ['Pouls', 'ph:activity-bold', '#fdf4ff', '#9333ea'],
+                            'GLYCEMIE' => ['Glycémie', 'ph:drop-bold', '#fff7ed', '#d97706'],
+                            'POIDS_IMC' => ['Poids', 'ph:scales-bold', '#eff6ff', '#2563eb'],
+                        ];
+                        $jours = is_array($pl->jours) ? $pl->jours : json_decode($pl->jours, true);
+                    @endphp
+                    <div class="planning-card">
+                        <div class="planning-icon"><iconify-icon icon="ph:calendar-check-bold"></iconify-icon></div>
+                        <div class="flex-grow-1">
+                            <div class="planning-title">
+                                {{ $pl->frequency_label ?? ($pl->frequency_type === '1x' ? '1 fois par semaine' : ($pl->frequency_type === '2x' ? '2 fois par semaine' : 'Planning personnalisé')) }}
+                                <span class="planning-badge">{{ $pl->status === 'ACTIF' ? 'Actif' : 'Inactif' }}</span>
+                            </div>
+                            <div class="planning-meta">
+                                {{ implode(', ', $jours ?? []) }} ·
+                                {{ \Carbon\Carbon::parse($pl->heure)->format('H:i') }}
+                            </div>
+                            <div class="planning-tags">
+                                @foreach ($pl->mesures_types as $mt)
+                                    @php [$lbl, $ic, $bg, $col] = $plMesuresMap[$mt] ?? ['—','ph:pulse-bold','#f1f5f9','#64748b']; @endphp
+                                    <span class="planning-tag"
+                                        style="background:{{ $bg }};color:{{ $col }};">
+                                        <iconify-icon icon="{{ $ic }}"></iconify-icon> {{ $lbl }}
+                                    </span>
+                                @endforeach
+                            </div>
+                            <div class="planning-rappel">
+                                <iconify-icon icon="ph:bell-bold"></iconify-icon>
+                                Rappel {{ strtolower($pl->rappel_avant_label ?? 'la veille') }} ·
+                                {{ ucfirst(strtolower($pl->canal)) }}
+                            </div>
+                            @if ($pl->notes)
+                                <div class="planning-note">{{ $pl->notes }}</div>
+                            @endif
+                        </div>
+                        <div class="planning-actions">
+                            <button class="planning-icon-btn" onclick="editPlanning({{ $pl->id }})">
+                                <iconify-icon icon="ph:pencil-simple-bold"></iconify-icon>
+                            </button>
+                            <form action="{{ route('patients.planning.destroy', [$patient->id_patient, $pl->id]) }}"
+                                method="POST" onsubmit="return confirm('Supprimer ce planning ?')">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="planning-icon-btn danger">
+                                    <iconify-icon icon="ph:trash-bold"></iconify-icon>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                @empty
+                    <div style="text-align:center;padding:20px;color:#94a3b8;font-size:13px;">Aucun planning récurrent
+                    </div>
+                @endforelse
+            </div>
+
+            {{-- Prochains RDV --}}
+            <div class="content-card">
+                <div class="card-title mb-3">
+                    <iconify-icon icon="ph:calendar-blank-bold" style="color:#334155;"></iconify-icon>
+                    Prochains RDV ({{ $prochainsRdv->count() }})
+                </div>
+                @forelse($prochainsRdv as $rdv)
+                    @php
+                        $rdate = \Carbon\Carbon::parse($rdv->date);
+                        $rdvMesuresMap = [
+                            'PRESSION_ARTERIELLE' => ['Tension', 'ph:heart-bold', '#fce4ec', '#c2185b'],
+                            'FREQUENCE_CARDIAQUE' => ['Pouls', 'ph:activity-bold', '#fdf4ff', '#9333ea'],
+                            'GLYCEMIE' => ['Glycémie', 'ph:drop-bold', '#fff7ed', '#d97706'],
+                            'POIDS_IMC' => ['Poids', 'ph:scales-bold', '#eff6ff', '#2563eb'],
+                        ];
+                    @endphp
+                    <div class="rdv-item">
+                        <div class="rdv-date-box">
+                            <div class="rdv-date-dow">{{ mb_strtoupper($rdate->translatedFormat('D')) }}</div>
+                            <div class="rdv-date-day">{{ $rdate->format('d') }}</div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="rdv-item-title">{{ $rdate->translatedFormat('l j') }} à
+                                {{ \Carbon\Carbon::parse($rdv->heure)->format('H:i') }}</div>
+                            <div class="rdv-item-tags">
+                                @foreach ($rdv->mesures_types as $mt)
+                                    @php [$lbl, $ic, $bg, $col] = $rdvMesuresMap[$mt] ?? ['—','ph:pulse-bold','#f1f5f9','#64748b']; @endphp
+                                    <span class="planning-tag"
+                                        style="background:{{ $bg }};color:{{ $col }};">
+                                        <iconify-icon icon="{{ $ic }}"></iconify-icon> {{ $lbl }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        </div>
+                        <div class="rdv-item-actions">
+                            <form action="{{ route('patients.rdv.marquer', [$patient->id_patient, $rdv->id]) }}"
+                                method="POST">
+                                @csrf
+                                <input type="hidden" name="status" value="EFFECTUE">
+                                <button type="submit" class="btn-effectue">
+                                    <iconify-icon icon="ph:check-circle-bold"></iconify-icon> Effectué
+                                </button>
+                            </form>
+                            <form action="{{ route('patients.rdv.marquer', [$patient->id_patient, $rdv->id]) }}"
+                                method="POST">
+                                @csrf
+                                <input type="hidden" name="status" value="ABSENT">
+                                <button type="submit" class="btn-absent">
+                                    <iconify-icon icon="ph:x-circle-bold"></iconify-icon> Absent
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                @empty
+                    <div style="text-align:center;padding:20px;color:#94a3b8;font-size:13px;">Aucun RDV à venir</div>
+                @endforelse
+            </div>
+
+            {{-- Historique RDV --}}
+            <div class="content-card">
+                <div class="card-title mb-3">Historique RDV</div>
+                @forelse($historiqueRdv as $rdv)
+                    @php
+                        $rdate = \Carbon\Carbon::parse($rdv->date);
+                        $rdvMesuresMap = [
+                            'PRESSION_ARTERIELLE' => 'Tension',
+                            'FREQUENCE_CARDIAQUE' => 'Pouls',
+                            'GLYCEMIE' => 'Glycémie',
+                            'POIDS_IMC' => 'Poids',
+                        ];
+                    @endphp
+                    <div class="rdv-histo-row">
+                        <div class="rdv-date-box sm">
+                            <div class="rdv-date-dow">{{ mb_strtoupper($rdate->translatedFormat('D')) }}</div>
+                            <div class="rdv-date-day">{{ $rdate->format('d') }}</div>
+                        </div>
+                        <div>
+                            <div style="font-size:13px;font-weight:700;color:#0f172a;">{{ $rdate->format('Y-m-d') }} à
+                                {{ \Carbon\Carbon::parse($rdv->heure)->format('H:i') }}</div>
+                            <div class="rdv-histo-tags">
+                                <span style="font-size:11px;color:#94a3b8;">
+                                    {{ collect($rdv->mesures_types)->map(fn($mt) => $rdvMesuresMap[$mt] ?? $mt)->implode(' ') }}
+                                </span>
+                            </div>
+                        </div>
+                        <span
+                            class="rdv-histo-status {{ $rdv->status === 'EFFECTUE' ? 'status-effectue' : 'status-manque' }}">
+                            {{ $rdv->status === 'EFFECTUE' ? 'Effectué' : 'Manqué' }}
+                        </span>
+                    </div>
+                @empty
+                    <div style="text-align:center;padding:20px;color:#94a3b8;font-size:13px;">Aucun historique</div>
+                @endforelse
+            </div>
+        </div>
+
         {{-- ════════ TAB : MESSAGES ════════ --}}
         <div id="tab-messages" style="display:none;">
             <div class="d-flex align-items-center justify-content-between mb-3">
@@ -2490,15 +3039,222 @@
         </div>
     </div>
 
+    {{-- ════════ MODAL NOUVEAU PLANNING ════════ --}}
+    <div class="modal-overlay" id="planning-modal">
+        <div class="modal-box" style="width:460px;">
+            <div class="modal-header">
+                <div>
+                    <span class="modal-title">Nouveau planning</span>
+                    <div class="modal-sub">Définissez le rythme des mesures</div>
+                </div>
+                <button class="modal-close" onclick="closePlanningModal()">
+                    <iconify-icon icon="ph:x-bold"></iconify-icon>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ route('patients.planning.store', $patient->id_patient) }}" method="POST"
+                    id="planningForm">
+                    @csrf
+                    <input type="hidden" name="frequency_type" id="pl-frequence-input" value="1x">
+                    <input type="hidden" name="jours[]" id="pl-jours-input">
+
+                    <div class="field-lbl">Fréquence *</div>
+                    <div class="freq-grid">
+                        <button type="button" class="freq-btn active"
+                            onclick="setFrequence(this,'1x')">1×/semaine</button>
+                        <button type="button" class="freq-btn" onclick="setFrequence(this,'2x')">2×/semaine</button>
+                        <button type="button" class="freq-btn"
+                            onclick="setFrequence(this,'perso')">Personnalisé</button>
+                    </div>
+
+                    <div id="pl-jours-block">
+                        <div class="field-lbl" id="pl-jours-label">Jour de la semaine *</div>
+                        <div class="jour-grid">
+                            @foreach (['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'] as $j)
+                                <button type="button" class="jour-btn"
+                                    onclick="toggleJour(this,'{{ $j }}')">{{ $j }}</button>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div id="pl-date-block" style="display:none;margin-bottom:18px;">
+                        <div class="field-lbl">Date du RDV *</div>
+                        <input type="date" name="date_rdv" id="pl-date-rdv" class="f-input">
+                    </div>
+
+                    <div class="field-lbl">Heure *</div>
+                    <input type="time" name="heure" class="f-input" value="09:00" style="margin-bottom:18px;"
+                        required>
+
+                    <div class="field-lbl">Mesures à effectuer *</div>
+                    <div class="mesure-toggle-grid">
+                        <button type="button" class="mesure-toggle-btn active"
+                            onclick="toggleMesureType(this,'PRESSION_ARTERIELLE')">
+                            <iconify-icon icon="ph:heart-bold"></iconify-icon> Tension
+                        </button>
+                        <button type="button" class="mesure-toggle-btn active"
+                            onclick="toggleMesureType(this,'FREQUENCE_CARDIAQUE')">
+                            <iconify-icon icon="ph:activity-bold"></iconify-icon> Pouls
+                        </button>
+                        <button type="button" class="mesure-toggle-btn" onclick="toggleMesureType(this,'GLYCEMIE')">
+                            <iconify-icon icon="ph:drop-bold"></iconify-icon> Glycémie
+                        </button>
+                        <button type="button" class="mesure-toggle-btn" onclick="toggleMesureType(this,'POIDS_IMC')">
+                            <iconify-icon icon="ph:scales-bold"></iconify-icon> Poids
+                        </button>
+                    </div>
+                    <div id="pl-mesures-inputs"></div>
+
+                    <div class="form-row">
+                        <div>
+                            <div class="field-lbl">Rappel avant</div>
+                            <select name="rappel_avant" class="f-input f-select">
+                                <option value="24H">La veille (24h)</option>
+                                <option value="2H">2 heures avant</option>
+                                <option value="1H">1 heure avant</option>
+                                <option value="2J">2 jours avant</option>
+                                <option value="AUCUN">Aucun rappel</option>
+                            </select>
+                        </div>
+                        <div>
+                            <div class="field-lbl">Canal</div>
+                            <select name="canal" class="f-input f-select">
+                                <option value="WHATSAPP">WhatsApp</option>
+                                <option value="SMS">SMS</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="field-lbl">Notes (optionnel)</div>
+                        <textarea name="notes" class="f-input" rows="2" style="resize:none;"
+                            placeholder="Instructions particulières..."></textarea>
+                    </div>
+
+                    <div class="panel-btns">
+                        <button type="button" class="btn-annuler" onclick="closePlanningModal()">Annuler</button>
+                        <button type="submit" class="btn-enregistrer">Créer le planning</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script>
         /* ═══════════════════════════════════════════════════
-                   SCRIPT UNIFIÉ — view-patient-dynamic.blade.php
-                   Remplace TOUS les blocs <script> existants dans la vue
-                ═══════════════════════════════════════════════════ */
+                                   SCRIPT UNIFIÉ — view-patient-dynamic.blade.php
+                                   Remplace TOUS les blocs <script> existants dans la vue
+                                ═══════════════════════════════════════════════════ */
 
         /* ── 1. TABS ── */
-        const TABS = ['generale', 'pathologies', 'traitements', 'mesures', 'messages', 'reseau'];
+        /* ── TABS : ajouter 'rdv' dans la liste ── */
+        // Remplacer la ligne existante :
+        // const TABS = ['generale', 'pathologies', 'traitements', 'mesures', 'messages', 'reseau'];
+        // par :
+        const TABS = ['generale', 'pathologies', 'traitements', 'mesures', 'rdv', 'messages', 'reseau'];
+
+        /* ── MODAL PLANNING ── */
+        function openPlanningModal() {
+            document.getElementById('planning-modal')?.classList.add('show');
+        }
+
+        function closePlanningModal() {
+            document.getElementById('planning-modal')?.classList.remove('show');
+        }
+        document.getElementById('planning-modal')?.addEventListener('click', function(e) {
+            if (e.target === this) closePlanningModal();
+        });
+
+        /* ── FRÉQUENCE ── */
+        function setFrequence(btn, val) {
+            document.querySelectorAll('.freq-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('pl-frequence-input').value = val;
+
+            const joursBlock = document.getElementById('pl-jours-block');
+            const dateBlock = document.getElementById('pl-date-block');
+            const joursLabel = document.getElementById('pl-jours-label');
+
+            if (val === 'perso') {
+                joursBlock.style.display = 'none';
+                dateBlock.style.display = '';
+                document.getElementById('pl-date-rdv').required = true;
+            } else {
+                joursBlock.style.display = '';
+                dateBlock.style.display = 'none';
+                document.getElementById('pl-date-rdv').required = false;
+                joursLabel.textContent = val === '2x' ? 'Jours de la semaine *' : 'Jour de la semaine *';
+                if (val === '1x') {
+                    // ne garder qu'un seul jour actif
+                    const actifs = document.querySelectorAll('.jour-btn.active');
+                    actifs.forEach((b, i) => {
+                        if (i > 0) b.classList.remove('active');
+                    });
+                }
+            }
+            syncJoursInput();
+        }
+
+        /* ── JOURS ── */
+        function toggleJour(btn, jour) {
+            const freq = document.getElementById('pl-frequence-input').value;
+            if (freq === '1x') {
+                document.querySelectorAll('.jour-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            } else {
+                btn.classList.toggle('active');
+            }
+            syncJoursInput();
+        }
+
+        function syncJoursInput() {
+            const jours = Array.from(document.querySelectorAll('.jour-btn.active')).map(b => b.textContent.trim());
+            const container = document.getElementById('planningForm');
+            container.querySelectorAll('input[name="jours[]"]').forEach(el => el.remove());
+            jours.forEach(j => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'jours[]';
+                input.value = j;
+                container.appendChild(input);
+            });
+        }
+
+        /* ── MESURES À EFFECTUER ── */
+        function toggleMesureType(btn, type) {
+            btn.classList.toggle('active');
+            syncMesuresInputs();
+        }
+
+        function syncMesuresInputs() {
+            const container = document.getElementById('pl-mesures-inputs');
+            container.innerHTML = '';
+            document.querySelectorAll('.mesure-toggle-btn.active').forEach(b => {
+                const label = b.textContent.trim();
+                const map = {
+                    'Tension': 'PRESSION_ARTERIELLE',
+                    'Pouls': 'FREQUENCE_CARDIAQUE',
+                    'Glycémie': 'GLYCEMIE',
+                    'Poids': 'POIDS_IMC'
+                };
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'mesures_types[]';
+                input.value = map[label] || label;
+                container.appendChild(input);
+            });
+        }
+
+        /* ── Initialisation planning au chargement ── */
+        document.addEventListener('DOMContentLoaded', function() {
+            // Premier jour sélectionné par défaut (Lundi) et mesures par défaut
+            const lunBtn = Array.from(document.querySelectorAll('.jour-btn')).find(b => b.textContent.trim() ===
+                'Lun');
+            if (lunBtn) lunBtn.classList.add('active');
+            syncJoursInput();
+            syncMesuresInputs();
+        });
 
         function switchTab(name) {
             TABS.forEach(t => {

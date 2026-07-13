@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Patient;
+use App\Models\Planning;
+use App\Models\RendezVous;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -311,6 +313,30 @@ class PatientsController extends Controller
         // Tous les médicaments
         $medicaments = DB::table('medicaments')->orderBy('name')->get();
 
+        // ── Plannings récurrents actifs ──
+        $plannings = Planning::where('patient_id', $id)
+            ->where('status', 'ACTIF')
+            ->orderByDesc('created_at')
+            ->get();
+
+        // ── Prochains RDV (à venir, non traités) ──
+        $prochainsRdv = RendezVous::where('patient_id', $id)
+            ->where('status', 'ATTENTE')
+            ->where('date', '>=', Carbon::today())
+            ->orderBy('date')
+            ->orderBy('heure')
+            ->get();
+
+        // ── Historique RDV (passés ou déjà traités) ──
+        $historiqueRdv = RendezVous::where('patient_id', $id)
+            ->where(function ($q) {
+                $q->where('status', '!=', 'ATTENTE')
+                    ->orWhere('date', '<', Carbon::today());
+            })
+            ->orderByDesc('date')
+            ->orderByDesc('heure')
+            ->get();
+
         return view('patients.view-patient', compact(
             'patient',
             'pathologies',
@@ -322,7 +348,169 @@ class PatientsController extends Controller
             'pharmaciesLiees',
             'allPathologies',
             'medicaments',
+            'plannings',
+            'prochainsRdv',
+            'historiqueRdv',
         ));
+    }
+
+    /**
+     * Créer un nouveau planning (récurrent ou ponctuel)
+     */
+    public function planningStore(Request $request, string $patientId)
+    {
+        $request->validate([
+            'frequency_type' => 'required|in:1x,2x,perso',
+            'heure'           => 'required',
+            'mesures_types'   => 'required|array|min:1',
+            'jours'           => 'required_if:frequency_type,1x,2x|array',
+            'date_rdv'        => 'required_if:frequency_type,perso|nullable|date',
+        ], [
+            'jours.required_if'    => 'Veuillez sélectionner au moins un jour.',
+            'date_rdv.required_if' => 'Veuillez indiquer la date du RDV personnalisé.',
+            'mesures_types.required' => 'Veuillez sélectionner au moins une mesure à effectuer.',
+        ]);
+
+        $pharmacyId   = session('pharmacy_id');
+        $pharmacienId = Auth::guard('pharmacien')->user()->id_pharmacien;
+
+        $patient = DB::table('patients')
+            ->where('id_patient', $patientId)
+            ->where('pharmacy_id', $pharmacyId)
+            ->first();
+        abort_if(!$patient, 404);
+
+        if ($request->frequency_type === 'perso') {
+            // RDV ponctuel : pas de planning récurrent, juste une entrée rendez_vous
+            RendezVous::create([
+                'patient_id'    => $patientId,
+                'pharmacy_id'   => $pharmacyId,
+                'planning_id'   => null,
+                'date'          => $request->date_rdv,
+                'heure'         => $request->heure,
+                'mesures_types' => $request->mesures_types,
+                'status'        => 'ATTENTE',
+                'notes'         => $request->notes,
+            ]);
+
+            return back()->with('success', 'RDV personnalisé créé avec succès.');
+        }
+
+        // Planning récurrent (1x ou 2x par semaine)
+        $planning = Planning::create([
+            'patient_id'     => $patientId,
+            'pharmacy_id'    => $pharmacyId,
+            'created_by'     => $pharmacienId,
+            'frequency_type' => $request->frequency_type,
+            'jours'          => $request->jours,
+            'heure'          => $request->heure,
+            'mesures_types'  => $request->mesures_types,
+            'rappel_avant'   => $request->rappel_avant ?? '24H',
+            'canal'          => $request->canal ?? 'WHATSAPP',
+            'notes'          => $request->notes,
+            'status'         => 'ACTIF',
+        ]);
+
+        // Générer les prochaines occurrences (8 semaines à venir)
+        $this->genererOccurrencesRdv($planning);
+
+        return back()->with('success', 'Planning créé avec succès.');
+    }
+
+    /**
+     * Désactiver / supprimer un planning récurrent
+     */
+    public function planningDestroy(string $patientId, string $planningId)
+    {
+        $pharmacyId = session('pharmacy_id');
+
+        $planning = Planning::where('id', $planningId)
+            ->where('patient_id', $patientId)
+            ->where('pharmacy_id', $pharmacyId)
+            ->first();
+
+        abort_if(!$planning, 404);
+
+        // On désactive le planning et on supprime les RDV futurs non traités
+        RendezVous::where('planning_id', $planning->id)
+            ->where('status', 'ATTENTE')
+            ->where('date', '>=', Carbon::today())
+            ->delete();
+
+        $planning->delete();
+
+        return back()->with('success', 'Planning supprimé.');
+    }
+
+    /**
+     * Marquer un RDV comme Effectué ou Absent (Manqué)
+     */
+    public function rdvMarquer(Request $request, string $patientId, string $rdvId)
+    {
+        $request->validate([
+            'status' => 'required|in:EFFECTUE,ABSENT',
+        ]);
+
+        $pharmacyId = session('pharmacy_id');
+
+        $rdv = RendezVous::where('id', $rdvId)
+            ->where('patient_id', $patientId)
+            ->where('pharmacy_id', $pharmacyId)
+            ->first();
+
+        abort_if(!$rdv, 404);
+
+        $rdv->status = $request->status === 'EFFECTUE' ? 'EFFECTUE' : 'MANQUE';
+        $rdv->save();
+
+        $label = $rdv->status === 'EFFECTUE' ? 'marqué comme effectué' : 'marqué comme absent';
+
+        return back()->with('success', "RDV $label.");
+    }
+
+    /**
+     * Génère les occurrences futures d'un planning récurrent
+     * (par défaut : 8 semaines à venir)
+     */
+    private function genererOccurrencesRdv(Planning $planning, int $semaines = 8): void
+    {
+        $joursMap = [
+            'Dim' => 0,
+            'Lun' => 1,
+            'Mar' => 2,
+            'Mer' => 3,
+            'Jeu' => 4,
+            'Ven' => 5,
+            'Sam' => 6,
+        ];
+
+        $joursNumeros = collect($planning->jours)
+            ->map(fn($j) => $joursMap[$j] ?? null)
+            ->filter(fn($n) => $n !== null)
+            ->values();
+
+        if ($joursNumeros->isEmpty()) {
+            return;
+        }
+
+        $debut = Carbon::today();
+        $fin   = Carbon::today()->addWeeks($semaines);
+
+        $date = $debut->copy();
+        while ($date->lte($fin)) {
+            if ($joursNumeros->contains($date->dayOfWeek)) {
+                RendezVous::create([
+                    'patient_id'    => $planning->patient_id,
+                    'pharmacy_id'   => $planning->pharmacy_id,
+                    'planning_id'   => $planning->id,
+                    'date'          => $date->format('Y-m-d'),
+                    'heure'         => $planning->heure,
+                    'mesures_types' => $planning->mesures_types,
+                    'status'        => 'ATTENTE',
+                ]);
+            }
+            $date->addDay();
+        }
     }
 
     /**

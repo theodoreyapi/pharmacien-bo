@@ -37,7 +37,7 @@ Route::get('/payment/wave/success/{id}', [PaymentWaveController::class, 'success
 Route::get('/payment/wave/error/{id}', [PaymentWaveController::class, 'error'])
     ->name('wave.error');
 
-    // Abonnement
+// Abonnement
 Route::get('/abonnement/wave/success/{id}', [PaymentWaveController::class, 'Abonsuccess'])
     ->name('abonnement.wave.success');
 Route::get('/abonnement/wave/error/{id}', [PaymentWaveController::class, 'Abonerror'])
@@ -134,6 +134,10 @@ Route::prefix('patients/{patient}')->name('patients.')->group(function () {
     // Rappels / Messages
     Route::post('rappel', [PatientActionsController::class, 'storeRappel'])->name('rappel.store');
 });
+
+Route::post('/{patient}/planning', [PatientsController::class, 'planningStore'])->name('patients.planning.store');
+Route::delete('/{patient}/planning/{planning}', [PatientsController::class, 'planningDestroy'])->name('patients.planning.destroy');
+Route::post('/{patient}/rdv/{rdv}/marquer', [PatientsController::class, 'rdvMarquer'])->name('patients.rdv.marquer');
 
 Route::resource('rappels', RappelController::class);
 Route::resource('messages', MessageController::class);
