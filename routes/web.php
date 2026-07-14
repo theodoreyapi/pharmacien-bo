@@ -19,6 +19,7 @@ use App\Http\Controllers\PharmacyProfileController;
 use App\Http\Controllers\PolicyController;
 use App\Http\Controllers\RappelController;
 use App\Http\Controllers\RechargementController;
+use App\Http\Controllers\RendezVousController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\StatistiqueController;
 use App\Models\Commune;
@@ -138,6 +139,11 @@ Route::prefix('patients/{patient}')->name('patients.')->group(function () {
 Route::post('/{patient}/planning', [PatientsController::class, 'planningStore'])->name('patients.planning.store');
 Route::delete('/{patient}/planning/{planning}', [PatientsController::class, 'planningDestroy'])->name('patients.planning.destroy');
 Route::post('/{patient}/rdv/{rdv}/marquer', [PatientsController::class, 'rdvMarquer'])->name('patients.rdv.marquer');
+Route::post('/{patient}/rappel', [PatientsController::class, 'rappelStore'])->name('patients.rappel.store');
+
+Route::get('/rendez-vous', [RendezVousController::class, 'index'])->name('rendezvous.index');
+Route::post('/rendez-vous', [RendezVousController::class, 'store'])->name('rendezvous.store');
+Route::post('/rendez-vous/{rdv}/marquer', [RendezVousController::class, 'marquer'])->name('rendezvous.marquer');
 
 Route::resource('rappels', RappelController::class);
 Route::resource('messages', MessageController::class);

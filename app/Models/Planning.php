@@ -11,6 +11,8 @@ class Planning extends Model
 
     protected $table = 'plannings';
 
+    protected $primaryKey = 'id_planning';
+
     protected $fillable = [
         'patient_id',
         'pharmacy_id',

@@ -2685,10 +2685,11 @@
                             @endif
                         </div>
                         <div class="planning-actions">
-                            <button class="planning-icon-btn" onclick="editPlanning({{ $pl->id }})">
+                            {{-- <button class="planning-icon-btn" onclick="editPlanning({{ $pl->id_planning }})">
                                 <iconify-icon icon="ph:pencil-simple-bold"></iconify-icon>
-                            </button>
-                            <form action="{{ route('patients.planning.destroy', [$patient->id_patient, $pl->id]) }}"
+                            </button> --}}
+                            <form
+                                action="{{ route('patients.planning.destroy', [$patient->id_patient, $pl->id_planning]) }}"
                                 method="POST" onsubmit="return confirm('Supprimer ce planning ?')">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="planning-icon-btn danger">
@@ -2721,11 +2722,11 @@
                     @endphp
                     <div class="rdv-item">
                         <div class="rdv-date-box">
-                            <div class="rdv-date-dow">{{ mb_strtoupper($rdate->translatedFormat('D')) }}</div>
+                            <div class="rdv-date-dow">{{ mb_strtoupper($rdate->translatedFormat('ddd')) }}</div>
                             <div class="rdv-date-day">{{ $rdate->format('d') }}</div>
                         </div>
                         <div class="flex-grow-1">
-                            <div class="rdv-item-title">{{ $rdate->translatedFormat('l j') }} à
+                            <div class="rdv-item-title">{{ $rdate->translatedFormat('l j F') }} à
                                 {{ \Carbon\Carbon::parse($rdv->heure)->format('H:i') }}</div>
                             <div class="rdv-item-tags">
                                 @foreach ($rdv->mesures_types as $mt)
@@ -2738,7 +2739,8 @@
                             </div>
                         </div>
                         <div class="rdv-item-actions">
-                            <form action="{{ route('patients.rdv.marquer', [$patient->id_patient, $rdv->id]) }}"
+                            <form
+                                action="{{ route('patients.rdv.marquer', [$patient->id_patient, $rdv->id_rendez_vous]) }}"
                                 method="POST">
                                 @csrf
                                 <input type="hidden" name="status" value="EFFECTUE">
@@ -2746,7 +2748,8 @@
                                     <iconify-icon icon="ph:check-circle-bold"></iconify-icon> Effectué
                                 </button>
                             </form>
-                            <form action="{{ route('patients.rdv.marquer', [$patient->id_patient, $rdv->id]) }}"
+                            <form
+                                action="{{ route('patients.rdv.marquer', [$patient->id_patient, $rdv->id_rendez_vous]) }}"
                                 method="POST">
                                 @csrf
                                 <input type="hidden" name="status" value="ABSENT">
@@ -2780,7 +2783,7 @@
                             <div class="rdv-date-day">{{ $rdate->format('d') }}</div>
                         </div>
                         <div>
-                            <div style="font-size:13px;font-weight:700;color:#0f172a;">{{ $rdate->format('Y-m-d') }} à
+                            <div style="font-size:13px;font-weight:700;color:#0f172a;">{{ $rdate->format('d F Y') }} à
                                 {{ \Carbon\Carbon::parse($rdv->heure)->format('H:i') }}</div>
                             <div class="rdv-histo-tags">
                                 <span style="font-size:11px;color:#94a3b8;">
@@ -3143,9 +3146,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script>
         /* ═══════════════════════════════════════════════════
-                                   SCRIPT UNIFIÉ — view-patient-dynamic.blade.php
-                                   Remplace TOUS les blocs <script> existants dans la vue
-                                ═══════════════════════════════════════════════════ */
+                                                   SCRIPT UNIFIÉ — view-patient-dynamic.blade.php
+                                                   Remplace TOUS les blocs <script> existants dans la vue
+                                                ═══════════════════════════════════════════════════ */
 
         /* ── 1. TABS ── */
         /* ── TABS : ajouter 'rdv' dans la liste ── */

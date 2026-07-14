@@ -11,6 +11,8 @@ class RendezVous extends Model
 
     protected $table = 'rendez_vous';
 
+    protected $primaryKey = 'id_rendez_vous';
+
     protected $fillable = [
         'patient_id',
         'pharmacy_id',

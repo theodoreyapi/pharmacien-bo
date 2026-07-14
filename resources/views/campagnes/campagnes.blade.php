@@ -677,9 +677,9 @@
                                 </span>
                             @break
 
-                            @case('EN_COURS')
+                            @case('ENVOYE')
                                 <span class="status-badge s-encours">
-                                    En cours
+                                    Envoyée
                                 </span>
                             @break
 

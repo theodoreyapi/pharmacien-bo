@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Pathologies;
 use App\Models\Patient;
 use App\Models\Rappel;
+use App\Services\ReminderDispatchService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -58,27 +59,69 @@ class RappelController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    // public function store(Request $request)
+    // {
+    //     $request->validate([
+    //         'patient_id' => 'required|exists:patients,id_patient',
+    //         'type' => 'required|in:RENOUVELLEMENT,MESURE,CONSEIL,CAMPAGNE,PERSONNALISE',
+    //         'channel' => 'required|in:WHATSAPP,SMS',
+    //         'message' => 'required|string',
+    //         'send_at' => 'nullable|date',
+    //     ]);
+
+    //     Rappel::create([
+    //         'patient_id' => $request->patient_id,
+    //         'type' => $request->type,
+    //         'channel' => $request->channel,
+    //         'message' => $request->message,
+    //         'status' => 'ENVOYE',
+    //         'sent_at' => $request->send_at ? Carbon::parse($request->send_at) : now(),
+    //         'pharmacien_id' => Auth::guard('pharmacien')->user()->id_pharmacien,
+    //     ]);
+
+    //     return redirect()->back()->with('success', 'Le rappel a bien été programmé/envoyé.');
+    // }
+
+    public function store(Request $request, ReminderDispatchService $dispatcher)
     {
         $request->validate([
             'patient_id' => 'required|exists:patients,id_patient',
-            'type' => 'required|in:RENOUVELLEMENT,MESURE,CONSEIL,CAMPAGNE,PERSONNALISE',
-            'channel' => 'required|in:WHATSAPP,SMS',
-            'message' => 'required|string',
-            'send_at' => 'nullable|date',
+            'type'       => 'required|in:RENOUVELLEMENT,MESURE,CONSEIL,CAMPAGNE,PERSONNALISE',
+            'channel'    => 'required|in:WHATSAPP,SMS',
+            'message'    => 'required|string',
+            'send_at'    => 'nullable|date',
         ]);
 
-        Rappel::create([
-            'patient_id' => $request->patient_id,
-            'type' => $request->type,
-            'channel' => $request->channel,
-            'message' => $request->message,
-            'status' => 'ENVOYE',
-            'sent_at' => $request->send_at ? Carbon::parse($request->send_at) : now(),
+        $patient = Patient::findOrFail($request->patient_id);
+
+        if ($erreur = $dispatcher->checkConsent($patient, $request->channel)) {
+            return back()->with('error', $erreur);
+        }
+
+        $envoiImmediat = !$request->filled('send_at') || Carbon::parse($request->send_at)->lte(now());
+
+        $rappel = Rappel::create([
+            'patient_id'    => $request->patient_id,
+            'type'          => $request->type,
+            'channel'       => $request->channel,
+            'message'       => $request->message,
+            'status'        => $envoiImmediat ? 'ENVOYE' : 'PLANIFIE',
+            'sent_at'       => $envoiImmediat ? null : Carbon::parse($request->send_at),
             'pharmacien_id' => Auth::guard('pharmacien')->user()->id_pharmacien,
         ]);
 
-        return redirect()->back()->with('success', 'Le rappel a bien été programmé/envoyé.');
+        // ── ENVOI IMMÉDIAT uniquement si pas de planification future ──
+        if ($envoiImmediat) {
+            $dispatcher->send($rappel, $patient);
+
+            if ($rappel->status === 'ECHEC') {
+                return redirect()->back()->with('error', "Échec de l'envoi : " . $rappel->error_message);
+            }
+
+            return redirect()->back()->with('success', 'Le rappel a bien été envoyé.');
+        }
+
+        return redirect()->back()->with('success', 'Le rappel a bien été programmé pour le ' . $rappel->sent_at->format('d/m/Y H:i') . '.');
     }
 
     /**

@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Patient;
+use App\Models\Rappel;
+use App\Services\ReminderDispatchService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -226,7 +229,7 @@ class PatientActionsController extends Controller
         $this->refreshPatientStatus($patientId);
 
         // Log réseau
-        $this->logNetwork($patientId, 'Traitement ' . $ancien->medicament_name . ' renouvelé');
+        $this->logNetwork($patientId, 'Traitement ' . $ancien->medication_name . ' renouvelé');
 
         return redirect()
             ->route('patients.show', $patientId)
@@ -352,36 +355,77 @@ class PatientActionsController extends Controller
        4. RAPPELS / MESSAGES
     ══════════════════════════════════════════ */
 
-    public function storeRappel(Request $request, int $patientId)
+    // public function storeRappel(Request $request, int $patientId)
+    // {
+    //     $request->validate([
+    //         'channel' => 'required|in:WHATSAPP,SMS',
+    //         'message' => 'required|string|min:5|max:1000',
+    //     ]);
+
+    //     $patient = $this->authorizePatient($patientId);
+
+    //     // Vérifie le consentement selon le canal
+    //     if ($request->channel === 'WHATSAPP' && !$patient->consent_whatsapp) {
+    //         return back()->with('error', 'Le patient n\'a pas consenti aux rappels WhatsApp.');
+    //     }
+    //     if ($request->channel === 'SMS' && !$patient->consent_sms) {
+    //         return back()->with('error', 'Le patient n\'a pas consenti aux rappels SMS.');
+    //     }
+
+    //     DB::table('rappels')->insert([
+    //         'channel'       => $request->channel,
+    //         'type'          => $request->type ?? 'PERSONNALISE',
+    //         'message'       => $request->message,
+    //         'status'        => 'ENVOYE',
+    //         'sent_at'       => now(),
+    //         'patient_id'    => $patientId,
+    //         'pharmacien_id' => $this->pharmacienId(),
+    //         'created_at'    => now(),
+    //         'updated_at'    => now(),
+    //     ]);
+
+    //     // Log réseau
+    //     $this->logNetwork($patientId, 'Rappel envoyé via ' . $request->channel);
+
+    //     return redirect()
+    //         ->route('patients.show', $patientId)
+    //         ->with('success', 'Message envoyé via ' . $request->channel . '.')
+    //         ->withFragment('tab-messages');
+    // }
+
+    public function storeRappel(Request $request, int $patientId, ReminderDispatchService $dispatcher)
     {
         $request->validate([
             'channel' => 'required|in:WHATSAPP,SMS',
             'message' => 'required|string|min:5|max:1000',
         ]);
 
-        $patient = $this->authorizePatient($patientId);
+        $patientRow = $this->authorizePatient($patientId); // objet stdClass (DB::table)
+        $patient = Patient::find($patientId);   // instance Eloquent pour le service
 
-        // Vérifie le consentement selon le canal
-        if ($request->channel === 'WHATSAPP' && !$patient->consent_whatsapp) {
-            return back()->with('error', 'Le patient n\'a pas consenti aux rappels WhatsApp.');
-        }
-        if ($request->channel === 'SMS' && !$patient->consent_sms) {
-            return back()->with('error', 'Le patient n\'a pas consenti aux rappels SMS.');
+        if ($erreur = $dispatcher->checkConsent($patient, $request->channel)) {
+            return back()->with('error', $erreur);
         }
 
-        DB::table('rappels')->insert([
+        $rappel = Rappel::create([
             'channel'       => $request->channel,
             'type'          => $request->type ?? 'PERSONNALISE',
             'message'       => $request->message,
             'status'        => 'ENVOYE',
-            'sent_at'       => now(),
             'patient_id'    => $patientId,
             'pharmacien_id' => $this->pharmacienId(),
-            'created_at'    => now(),
-            'updated_at'    => now(),
         ]);
 
-        // Log réseau
+        // ── ENVOI RÉEL ──
+        $dispatcher->send($rappel, $patient);
+
+        if ($rappel->status === 'ECHEC') {
+            return redirect()
+                ->route('patients.show', $patientId)
+                ->with('error', "Échec de l'envoi : " . $rappel->error_message)
+                ->withFragment('tab-messages');
+        }
+
         $this->logNetwork($patientId, 'Rappel envoyé via ' . $request->channel);
 
         return redirect()

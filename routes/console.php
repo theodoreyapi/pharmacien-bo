@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 
 
 Schedule::command('rdv:regenerer')->weekly();
+Schedule::command('rappels:envoyer-planifies')->everyFiveMinutes();

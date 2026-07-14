@@ -4,8 +4,12 @@
             <p class="mb-0">© {{ date('Y') }} PharmaConsults. Tous les droits sont réservés.</p>
         </div>
         <div class="col-auto">
-            <p class="mb-0">Fait par <span class="text-primary-600"><a href="https://www.aptiotech.com"
-                        target="_blank">AptioTech</a>
+            <p class="mb-0">
+                Fait par
+                <span class="text-primary-600">
+                    <a href="https://wa.me/2250585831647" target="_blank">
+                        YIG
+                    </a>
                 </span>
             </p>
         </div>

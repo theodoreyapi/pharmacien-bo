@@ -65,6 +65,20 @@
             </li>
 
             <li class="menu-item">
+                <a href="{{ url('rendez-vous') }}"
+                    class="d-flex align-items-center justify-content-between px-16 py-12 {{ Route::is('rendezvous.index') ? 'active-link' : '' }}"
+                    style="border-radius: 12px; text-decoration: none; font-weight: 500;">
+                    <div class="d-flex align-items-center gap-3">
+                        <iconify-icon icon="solar:calendar-date-outline" style="font-size: 1rem;"></iconify-icon>
+                        <span>Rendez-vous</span>
+                    </div>
+                    {{-- <span
+                        class="badge bg-danger px-8 py-4 rounded-pill text-white d-flex align-items-center justify-content-center"
+                        style="font-size: 0.75rem; min-width: 20px; height: 20px;">5</span> --}}
+                </a>
+            </li>
+
+            <li class="menu-item">
                 <a href="{{ url('rappels') }}"
                     class="d-flex align-items-center justify-content-between px-16 py-12 {{ Route::is('rappels') ? 'active-link' : '' }}"
                     style="border-radius: 12px; text-decoration: none; font-weight: 500;">

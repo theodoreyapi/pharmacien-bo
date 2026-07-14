@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Patient;
 use App\Models\Planning;
 use App\Models\RendezVous;
+use App\Services\OrangeSmsService;
+use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -424,7 +426,7 @@ class PatientsController extends Controller
     {
         $pharmacyId = session('pharmacy_id');
 
-        $planning = Planning::where('id', $planningId)
+        $planning = Planning::where('id_planning', $planningId)
             ->where('patient_id', $patientId)
             ->where('pharmacy_id', $pharmacyId)
             ->first();
@@ -453,7 +455,7 @@ class PatientsController extends Controller
 
         $pharmacyId = session('pharmacy_id');
 
-        $rdv = RendezVous::where('id', $rdvId)
+        $rdv = RendezVous::where('id_rendez_vous', $rdvId)
             ->where('patient_id', $patientId)
             ->where('pharmacy_id', $pharmacyId)
             ->first();
@@ -466,6 +468,76 @@ class PatientsController extends Controller
         $label = $rdv->status === 'EFFECTUE' ? 'marqué comme effectué' : 'marqué comme absent';
 
         return back()->with('success', "RDV $label.");
+    }
+
+    /**
+     * Envoie un rappel/message au patient via WhatsApp ou SMS (Orange)
+     */
+    public function rappelStore(
+        Request $request,
+        string $patientId,
+        OrangeSmsService $orangeSms,
+        WhatsAppService $whatsApp
+    ) {
+        $request->validate([
+            'channel' => 'required|in:WHATSAPP,SMS',
+            'type'    => 'required|string',
+            'message' => 'required|string|max:1000',
+        ], [
+            'message.required' => 'Veuillez saisir un message.',
+        ]);
+
+        $pharmacyId = session('pharmacy_id');
+
+        $patient = DB::table('patients')
+            ->where('id_patient', $patientId)
+            ->where('pharmacy_id', $pharmacyId)
+            ->first();
+
+        abort_if(!$patient, 404);
+
+        // Vérification des consentements du patient
+        if ($request->channel === 'WHATSAPP' && !$patient->consent_whatsapp) {
+            return back()->with('error', "Ce patient n'a pas donné son consentement pour être contacté par WhatsApp.");
+        }
+        if ($request->channel === 'SMS' && !$patient->consent_sms) {
+            return back()->with('error', "Ce patient n'a pas donné son consentement pour être contacté par SMS.");
+        }
+
+        if (empty($patient->phone_number)) {
+            return back()->with('error', "Ce patient n'a pas de numéro de téléphone enregistré.");
+        }
+
+        // Enregistrement initial du rappel (statut EN_COURS)
+        $rappelId = DB::table('rappels')->insertGetId([
+            'patient_id'  => $patientId,
+            'channel'     => $request->channel,
+            'type'        => $request->type,
+            'message'     => $request->message,
+            'status'      => 'ENVOYE',
+            'created_at'  => now(),
+            'updated_at'  => now(),
+        ]);
+
+        // Envoi réel selon le canal choisi
+        $result = $request->channel === 'WHATSAPP'
+            ? $whatsApp->send($patient->phone_number, $request->message)
+            : $orangeSms->send($patient->phone_number, $request->message);
+
+        DB::table('rappels')->where('id_rappel', $rappelId)->update([
+            'status'        => $result['success'] ? 'LIVRE' : 'ECHEC',
+            'provider_id'   => $result['provider_id'],
+            'error_message' => $result['error'],
+            'updated_at'    => now(),
+        ]);
+
+        if (!$result['success']) {
+            return back()->with('error', "Le message n'a pas pu être envoyé : " . $result['error']);
+        }
+
+        $canalLabel = $request->channel === 'WHATSAPP' ? 'WhatsApp' : 'SMS';
+
+        return back()->with('success', "Message envoyé au patient via $canalLabel.");
     }
 
     /**

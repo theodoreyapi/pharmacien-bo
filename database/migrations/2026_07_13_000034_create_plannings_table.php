@@ -22,7 +22,7 @@ return new class extends Migration
             $table->time('heure');
             $table->json('mesures_types')->comment("['PRESSION_ARTERIELLE','FREQUENCE_CARDIAQUE',...]"); // ['PRESSION_ARTERIELLE','FREQUENCE_CARDIAQUE',...]
 
-            $table->enum('rappel_avant', ['24H', '2H', '1H', 'AUCUN'])->default('24H');
+            $table->enum('rappel_avant', ['24H', '2H', '1H', '2J', 'AUCUN'])->default('24H');
             $table->enum('canal', ['WHATSAPP', 'SMS'])->default('WHATSAPP');
             $table->text('notes')->nullable();
 
