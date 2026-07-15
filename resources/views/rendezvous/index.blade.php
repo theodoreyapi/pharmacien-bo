@@ -939,13 +939,13 @@
                                 <div class="rdv-item-tags">{!! renderRdvTags($rdv, $mesuresMap) !!}</div>
                             </div>
                             <div class="rdv-item-actions">
-                                <form action="{{ route('rendezvous.marquer', $rdv->id) }}" method="POST">
+                                <form action="{{ route('rendezvous.marquer', $rdv->id_rendez_vous) }}" method="POST">
                                     @csrf
                                     <input type="hidden" name="status" value="EFFECTUE">
                                     <button type="submit" class="btn-effectue"><iconify-icon
                                             icon="ph:check-circle-bold"></iconify-icon> Effectué</button>
                                 </form>
-                                <form action="{{ route('rendezvous.marquer', $rdv->id) }}" method="POST">
+                                <form action="{{ route('rendezvous.marquer', $rdv->id_rendez_vous) }}" method="POST">
                                     @csrf
                                     <input type="hidden" name="status" value="ABSENT">
                                     <button type="submit" class="btn-absent"><iconify-icon
@@ -1068,12 +1068,14 @@
                             </div>
                             @if ($rdv->status === 'ATTENTE')
                                 <div class="rdv-item-actions">
-                                    <form action="{{ route('rendezvous.marquer', $rdv->id_rendez_vous) }}" method="POST">
+                                    <form action="{{ route('rendezvous.marquer', $rdv->id_rendez_vous) }}"
+                                        method="POST">
                                         @csrf<input type="hidden" name="status" value="EFFECTUE">
                                         <button type="submit" class="btn-effectue"><iconify-icon
                                                 icon="ph:check-circle-bold"></iconify-icon> Effectué</button>
                                     </form>
-                                    <form action="{{ route('rendezvous.marquer', $rdv->id_rendez_vous) }}" method="POST">
+                                    <form action="{{ route('rendezvous.marquer', $rdv->id_rendez_vous) }}"
+                                        method="POST">
                                         @csrf<input type="hidden" name="status" value="ABSENT">
                                         <button type="submit" class="btn-absent"><iconify-icon
                                                 icon="ph:x-circle-bold"></iconify-icon> Absent</button>
