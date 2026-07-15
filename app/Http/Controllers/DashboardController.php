@@ -189,6 +189,7 @@ class DashboardController extends Controller
             })
             ->whereDate('m.created_at', '>=', Carbon::now()->subDays(30))
             ->select(
+                'p.id_patient',
                 DB::raw("CONCAT(p.first_name, ' ', p.last_name) as patient_name"),
                 DB::raw("CONCAT(m.systolic,'/',m.diastolic,' mmHg') as valeur"),
                 'm.created_at'
@@ -199,6 +200,7 @@ class DashboardController extends Controller
             ->map(function ($item) {
                 return [
                     'type'    => 'critical',
+                    'patient_id' => $item->id_patient,
                     'patient' => $item->patient_name,
                     'niveau'  => 'Critique',
                     'titre'   => 'Tension critique',
@@ -215,6 +217,7 @@ class DashboardController extends Controller
             ->where('t.status', 'ACTIF')
             ->where('t.estimated_end_date', '<', Carbon::now()->subDays(10))
             ->select(
+                'p.id_patient',
                 DB::raw("CONCAT(p.first_name, ' ', p.last_name) as patient_name"),
                 DB::raw("GROUP_CONCAT(DISTINCT path.name SEPARATOR ' + ') as pathologies"),
                 DB::raw("DATEDIFF(NOW(), t.estimated_end_date) as days_late")
@@ -226,6 +229,7 @@ class DashboardController extends Controller
             ->map(function ($item) {
                 return [
                     'type'    => 'high',
+                    'patient_id' => $item->id_patient,
                     'patient' => $item->patient_name,
                     'niveau'  => 'Élevé',
                     'titre'   => 'Renouvellement en retard',
@@ -243,6 +247,7 @@ class DashboardController extends Controller
                     ->where('m.created_at', '>=', Carbon::now()->subDays(45));
             })
             ->select(
+                'p.id_patient',
                 DB::raw("CONCAT(p.first_name, ' ', p.last_name) as patient_name"),
                 DB::raw("DATEDIFF(NOW(), (SELECT MAX(created_at) FROM mesures WHERE patient_id = p.id_patient)) as days_no_measure")
             )
@@ -251,6 +256,7 @@ class DashboardController extends Controller
             ->map(function ($item) {
                 return [
                     'type'    => 'critical',
+                    'patient_id' => $item->id_patient,
                     'patient' => $item->patient_name,
                     'niveau'  => 'Critique',
                     'titre'   => 'Perte de suivi',

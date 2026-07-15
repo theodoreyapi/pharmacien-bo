@@ -2465,7 +2465,7 @@
                     <div id="mfields-glyc" style="display:none;">
                         <div class="info-bar amber">
                             <iconify-icon icon="ph:info-bold"></iconify-icon>
-                            Mesure obligatoirement à jeun · Normale : &lt; 6,1 g/L
+                            Mesure obligatoirement à jeun · Normale : entre 0,70 g/L et 1,10 g/L.
                         </div>
                         @if ($glyc)
                             <div class="last-mesure">
@@ -2475,7 +2475,7 @@
                         @endif
                         <div class="field-lbl">Glycémie à jeun (g/L)</div>
                         <input type="number" step="0.1" name="glycemia_mmol" id="f-glycemia" class="big-input"
-                            placeholder="5.5" min="1" max="50" readonly>
+                            placeholder="0.70" min="0.70" max="4.00" readonly>
                         <div class="context-bar">
                             <iconify-icon icon="ph:check-bold"></iconify-icon>
                             Contexte : <strong>À jeun</strong> — Le patient ne doit pas avoir mangé depuis au moins 8h
@@ -3146,9 +3146,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script>
         /* ═══════════════════════════════════════════════════
-                                                   SCRIPT UNIFIÉ — view-patient-dynamic.blade.php
-                                                   Remplace TOUS les blocs <script> existants dans la vue
-                                                ═══════════════════════════════════════════════════ */
+                                                       SCRIPT UNIFIÉ — view-patient-dynamic.blade.php
+                                                       Remplace TOUS les blocs <script> existants dans la vue
+                                                    ═══════════════════════════════════════════════════ */
 
         /* ── 1. TABS ── */
         /* ── TABS : ajouter 'rdv' dans la liste ── */

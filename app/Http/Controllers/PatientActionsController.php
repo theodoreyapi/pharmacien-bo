@@ -255,7 +255,7 @@ class PatientActionsController extends Controller
             'systolic'       => 'nullable|required_with:diastolic|integer|min:50|max:300',
             'diastolic'      => 'nullable|required_with:systolic|integer|min:30|max:200',
             'heart_rate_bpm' => 'nullable|integer|min:30|max:250',
-            'glycemia_mmol'  => 'nullable|numeric|min:1|max:50',
+            'glycemia_mmol'  => 'nullable|numeric|min:0.7|max:4',
             'weight_kg'      => 'nullable|required_with:height_cm|numeric|min:10|max:300',
             'height_cm'      => 'nullable|required_with:weight_kg|numeric|min:50|max:250',
         ]);

@@ -146,6 +146,8 @@ Route::post('/rendez-vous', [RendezVousController::class, 'store'])->name('rende
 Route::post('/rendez-vous/{rdv}/marquer', [RendezVousController::class, 'marquer'])->name('rendezvous.marquer');
 
 Route::resource('rappels', RappelController::class);
+Route::post('/rappels', [RappelController::class, 'store'])->name('rappels.store');
+
 Route::resource('messages', MessageController::class);
 Route::resource('campagnes', CampagneController::class);
 Route::resource('statistiques', StatistiqueController::class);

@@ -518,6 +518,17 @@
                     @else
                         <div class="d-flex flex-column gap-2">
                             @foreach ($patientsARelancer as $patient)
+                                @php
+                                    $pathoList = array_filter(
+                                        array_map('trim', explode(',', $patient->pathologies ?? '')),
+                                    );
+                                    $isCritique = $patient->days_late > 14;
+
+                                    // Message contextuel par défaut
+                                    $defaultMessage = $isCritique
+                                        ? "Bonjour {$patient->first_name}, votre suivi médical présente un retard important ({$patient->days_late} jours). Merci de passer à la pharmacie dès que possible."
+                                        : "Bonjour {$patient->first_name}, nous vous rappelons qu'un contrôle de vos constantes est attendu. Merci de passer à la pharmacie à votre convenance.";
+                                @endphp
                                 <div class="patient-row">
                                     <div class="d-flex align-items-center gap-3">
                                         <div class="patient-avatar">{{ $patient->initials }}</div>
@@ -526,12 +537,10 @@
                                                 {{ $patient->first_name }} {{ $patient->last_name }}
                                             </div>
                                             <div class="d-flex gap-1 flex-wrap">
-                                                @foreach (explode(',', $patient->pathologies ?? '') as $patho)
-                                                    @if (trim($patho))
-                                                        <span class="pill pill-danger">{{ trim($patho) }}</span>
-                                                    @endif
+                                                @foreach ($pathoList as $patho)
+                                                    <span class="pill pill-danger">{{ $patho }}</span>
                                                 @endforeach
-                                                @if ($patient->days_late > 14)
+                                                @if ($isCritique)
                                                     <span class="pill pill-danger">Critique</span>
                                                 @else
                                                     <span class="pill pill-warning">En retard</span>
@@ -539,8 +548,15 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <a href="{{ url('patient/' . $patient->id_patient . '/rappel') }}"
-                                        class="btn-relancer">Relancer</a>
+                                    <button type="button" class="btn-relancer"
+                                        onclick="openRelanceModal(
+                                    {{ $patient->id_patient }},
+                                    '{{ addslashes($patient->first_name . ' ' . $patient->last_name) }}',
+                                    '{{ addslashes($defaultMessage) }}',
+                                    '{{ $isCritique ? 'RENOUVELLEMENT' : 'MESURE' }}'
+                                )">
+                                        Relancer
+                                    </button>
                                 </div>
                             @endforeach
                         </div>
@@ -582,6 +598,237 @@
             </div>
         </div>
 
+        {{-- ══ MODAL RELANCE RAPIDE ══ --}}
+        <div class="modal-overlay" id="relance-modal">
+            <div class="modal-box" style="width:460px;">
+                <div class="modal-header">
+                    <div>
+                        <span class="modal-title">Relancer un patient</span>
+                        <div class="modal-sub" id="relance-patient-name">—</div>
+                    </div>
+                    <button class="modal-close" onclick="closeRelanceModal()">
+                        <iconify-icon icon="ph:x-bold"></iconify-icon>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ route('rappels.store') }}" method="POST" id="relanceForm">
+                        @csrf
+                        <input type="hidden" name="patient_id" id="relance-patient-id">
+                        <input type="hidden" name="type" id="relance-type">
+
+                        <div class="field-lbl mb-2">Canal d'envoi</div>
+                        <div class="canal-toggle mb-3">
+                            <button type="button" class="canal-btn active" id="relance-canal-wa"
+                                onclick="setRelanceCanal('WHATSAPP')">
+                                <iconify-icon icon="ph:chat-circle-text-bold"></iconify-icon> WhatsApp
+                            </button>
+                            <button type="button" class="canal-btn" id="relance-canal-sms"
+                                onclick="setRelanceCanal('SMS')">
+                                <iconify-icon icon="ph:device-mobile-bold"></iconify-icon> SMS
+                            </button>
+                        </div>
+                        <input type="hidden" name="channel" id="relance-channel-input" value="WHATSAPP">
+
+                        <div class="field-lbl">Message</div>
+                        <textarea name="message" id="relance-message" class="f-input" rows="4" style="resize:none;" required></textarea>
+
+                        <div class="panel-btns mt-3">
+                            <button type="button" class="btn-annuler" onclick="closeRelanceModal()">Annuler</button>
+                            <button type="submit" class="btn-enregistrer"
+                                style="display:flex;align-items:center;gap:6px;">
+                                <iconify-icon icon="ph:paper-plane-tilt-bold"></iconify-icon> Envoyer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            .modal-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(15, 23, 42, .45);
+                z-index: 2000;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .modal-overlay.show {
+                display: flex;
+            }
+
+            .modal-box {
+                background: white;
+                border-radius: 20px;
+                max-width: 95vw;
+                max-height: 90vh;
+                overflow-y: auto;
+                box-shadow: 0 24px 60px rgba(0, 0, 0, .18);
+            }
+
+            .modal-header {
+                padding: 20px 24px 16px;
+                border-bottom: 1px solid #f1f5f9;
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+            }
+
+            .modal-title {
+                font-size: 15px;
+                font-weight: 700;
+                color: #0f172a;
+            }
+
+            .modal-sub {
+                font-size: 12px;
+                color: #94a3b8;
+                margin-top: 2px;
+            }
+
+            .modal-close {
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                border: none;
+                background: #f8fafc;
+                cursor: pointer;
+                color: #64748b;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.1rem;
+            }
+
+            .modal-body {
+                padding: 20px 24px;
+            }
+
+            .field-lbl {
+                font-size: 12px;
+                font-weight: 600;
+                color: #475569;
+                margin-bottom: 5px;
+            }
+
+            .f-input {
+                width: 100%;
+                padding: 10px 13px;
+                border: 1.5px solid #e2e8f0;
+                border-radius: 10px;
+                font-size: 13px;
+                color: #334155;
+                background: white;
+                outline: none;
+                transition: border-color .15s;
+                font-family: 'DM Sans', sans-serif;
+            }
+
+            .f-input:focus {
+                border-color: #16a34a;
+                box-shadow: 0 0 0 3px rgba(22, 163, 74, .1);
+            }
+
+            .canal-toggle {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                border-radius: 12px;
+                overflow: hidden;
+                border: 1.5px solid #e2e8f0;
+            }
+
+            .canal-btn {
+                padding: 11px;
+                text-align: center;
+                font-size: 13px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all .15s;
+                background: white;
+                color: #64748b;
+                border: none;
+                font-family: 'DM Sans', sans-serif;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+            }
+
+            .canal-btn.active {
+                background: #16a34a;
+                color: white;
+            }
+
+            .panel-btns {
+                display: flex;
+                justify-content: flex-end;
+                gap: 8px;
+            }
+
+            .btn-annuler {
+                padding: 9px 18px;
+                border-radius: 10px;
+                border: 1.5px solid #e2e8f0;
+                background: white;
+                font-size: 13px;
+                font-weight: 600;
+                color: #475569;
+                cursor: pointer;
+                font-family: 'DM Sans', sans-serif;
+            }
+
+            .btn-enregistrer {
+                padding: 9px 20px;
+                border-radius: 10px;
+                border: none;
+                background: #16a34a;
+                color: white;
+                font-size: 13px;
+                font-weight: 600;
+                cursor: pointer;
+                font-family: 'DM Sans', sans-serif;
+                transition: background .15s;
+            }
+
+            .btn-enregistrer:hover {
+                background: #15803d;
+            }
+        </style>
+
+        <script>
+            function openRelanceModal(patientId, patientName, defaultMessage, type) {
+                document.getElementById('relance-patient-id').value = patientId;
+                document.getElementById('relance-patient-name').textContent = patientName;
+                document.getElementById('relance-message').value = defaultMessage;
+                document.getElementById('relance-type').value = type;
+
+                // Reset canal par défaut sur WhatsApp
+                setRelanceCanal('WHATSAPP');
+
+                document.getElementById('relance-modal').classList.add('show');
+            }
+
+            function closeRelanceModal() {
+                document.getElementById('relance-modal').classList.remove('show');
+            }
+
+            function setRelanceCanal(canal) {
+                const wa = document.getElementById('relance-canal-wa');
+                const sms = document.getElementById('relance-canal-sms');
+                const input = document.getElementById('relance-channel-input');
+
+                wa.classList.toggle('active', canal === 'WHATSAPP');
+                sms.classList.toggle('active', canal === 'SMS');
+                input.value = canal;
+            }
+
+            document.getElementById('relance-modal')?.addEventListener('click', function(e) {
+                if (e.target === this) closeRelanceModal();
+            });
+        </script>
+
         <br>
 
         {{-- ══ Alertes cliniques ══ --}}
@@ -621,8 +868,7 @@
                                         </div>
                                         <div class="alert-desc">{{ $alerte['desc'] }}</div>
                                     </div>
-                                    <a href="{{ url('requete') }}?search={{ urlencode($alerte['patient']) }}"
-                                        class="btn-dossier">Voir dossier</a>
+                                    <a href="{{ route('patients.show', $alerte['patient_id']) }}" class="btn-dossier">Voir dossier</a>
                                 </div>
                             </div>
                         </div>
